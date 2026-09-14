@@ -1,0 +1,60 @@
+# === MAVEN Y COMPILACIÓN ===
+# Ignorar por completo todas las carpetas de compilación (nunca se suben al repositorio)
+target/
+**/target/
+build/
+**/build/
+.pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Mantener el wrapper de Maven si lo usáis
+!.mvn/wrapper/maven-wrapper.jar
+
+# === INTELLIJ IDEA (ENFOQUE MULTI-MÓDULO) ===
+# Compartimos la estructura del Workspace (.idea) y de los módulos (*.iml) 
+# para que los alumnos lo vean todo organizado al clonar.
+# SOLO ignoramos los archivos temporales y locales del usuario:
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries
+.idea/shelf
+.idea/caches/
+.idea/artifacts/
+.idea/dataSources/
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/vcs.xml
+*.iws
+
+# === ECLIPSE ===
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# === NETBEANS ===
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# === VS CODE ===
+.vscode/
+
+# Ignorar las configuraciones locales generadas por Smart Tomcat
+.smarttomcat/
+**/.smarttomcat/
+
+# === SISTEMA OPERATIVO ===
+.DS_Store
+Thumbs.db
