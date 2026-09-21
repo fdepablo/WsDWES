@@ -19,6 +19,7 @@ dependency-reduced-pom.xml
 # para que los alumnos lo vean todo organizado al clonar.
 # SOLO ignoramos los archivos temporales y locales del usuario:
 .idea/workspace.xml
+.idea/compiler.xml
 .idea/tasks.xml
 .idea/usage.statistics.xml
 .idea/dictionaries
