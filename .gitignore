@@ -56,6 +56,9 @@ dependency-reduced-pom.xml
 .smarttomcat/
 **/.smarttomcat/
 
+# === INSTRUCCIONES LOCALES PARA EL ASISTENTE ===
+/AGENTS.md
+
 # === SISTEMA OPERATIVO ===
 .DS_Store
 Thumbs.db

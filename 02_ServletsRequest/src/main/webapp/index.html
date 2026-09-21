@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parámetros de una petición</title>
+</head>
+<body>
+<main>
+    <h1>Datos de la petición</h1>
+
+    <p>Completa el formulario para enviar dos parámetros al primer servlet.</p>
+
+    <form action="primer-servlet" method="get">
+        <p>
+            <label for="nombre">Nombre:</label>
+            <input id="nombre" name="nombrePersona" type="text">
+        </p>
+
+        <p>
+            <label for="edad">Edad:</label>
+            <input id="edad" name="edadPersona" type="number" min="0" max="130" required>
+        </p>
+
+        <button type="submit">Enviar datos</button>
+    </form>
+</main>
+</body>
+</html>
