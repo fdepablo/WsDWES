@@ -16,7 +16,7 @@ dependency-reduced-pom.xml
 
 # === INTELLIJ IDEA (ENFOQUE MULTI-MÓDULO) ===
 # Compartimos la estructura del Workspace (.idea) y de los módulos (*.iml) 
-# para que los alumnos lo vean todo organizado al clonar.
+# para que los alumnos lo vean organizado al clonar.
 # SOLO ignoramos los archivos temporales y locales del usuario:
 .idea/workspace.xml
 .idea/compiler.xml

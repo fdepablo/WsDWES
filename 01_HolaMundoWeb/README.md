@@ -26,6 +26,24 @@ Para evitar conflictos de dependencias entre ejercicios del curso, crearemos el 
     * **Parent:** **`None`** *(¡Crucial para que sea un proyecto aislado y autocontenido!)*
 3. Haz clic en **Create**.
 
+### Registrar el módulo en el proyecto raíz
+
+Aunque cada ejercicio tenga su propio `pom.xml` y sus propias dependencias, el `pom.xml` situado en la raíz de `WsDWES` funciona como agregador. Añade allí cada módulo nuevo:
+
+```xml
+<packaging>pom</packaging>
+
+<modules>
+    <module>00_Java</module>
+    <module>01_HolaMundoWeb</module>
+    <module>nombre-de-tu-practica</module>
+</modules>
+```
+
+Después, abre la ventana **Maven** de IntelliJ y pulsa **Reload All Maven Projects**. Así IntelliJ reconocerá el nuevo módulo y Smart Tomcat podrá usar sus clases compiladas.
+
+> Si el módulo todavía no aparece, haz clic derecho sobre su `pom.xml` y selecciona **Add as Maven Project**.
+
 ---
 
 ## 📝 Paso 3: Configurar el archivo `pom.xml`
@@ -33,9 +51,9 @@ Abre el archivo `pom.xml` del nuevo módulo que acabas de crear y sustituye todo
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://apache.org"
-         xmlns:xsi="http://w3.org"
-         xsi:schemaLocation="http://apache.org http://apache.org">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sinergiafp</groupId>
@@ -106,10 +124,17 @@ Abre el archivo `pom.xml` del nuevo módulo que acabas de crear y sustituye todo
 2. Haz clic en el botón **`+`** (arriba a la izquierda) y elige **Smart Tomcat** en la lista.
 3. Configura detalladamente los siguientes campos:
     * **Name:** `Tomcat 11`
-    * **Tomcat Server:** Pulsa el icono de la carpeta y selecciona el directorio en tu disco duro donde está descomprimido **Tomcat 11**.
+    * **Tomcat Server:** Pulsa el icono de la carpeta y selecciona el directorio en tu disco duro donde está descomprimido **Tomcat 11**. Si no está instalado, descárgalo desde la [página oficial de Apache Tomcat 11](https://tomcat.apache.org/download-11.cgi).
     * **Deployment Directory:** Selecciona la ruta de tu carpeta **`webapp`** (`.../src/main/webapp`).
     * **Context Path:** Escribe una única barra diagonal estándar **`/`**
+    * **Module:** Selecciona el módulo web que vas a ejecutar, por ejemplo **`01_HolaMundoWeb`**. Si se selecciona `WsDWES`, se publicará el HTML pero las clases de los servlets no estarán disponibles.
 4. Haz clic en **Apply** y luego en **OK**.
+
+### Trabajar con varios módulos web
+
+Smart Tomcat ejecuta un módulo web por configuración. Para no editarla cada vez, duplica la configuración y crea una por ejercicio, por ejemplo `Tomcat - 01_HolaMundoWeb` y `Tomcat - 02_Formularios`. En cada copia cambia **Deployment Directory** y **Module**.
+
+Las configuraciones de IntelliJ y Smart Tomcat son locales (`.idea/workspace.xml`, `.idea/compiler.xml` y `.smarttomcat/` no se versionan). Por tanto, cada alumno debe crear su configuración de ejecución después de clonar el repositorio; la estructura común de módulos se reconstruye desde los archivos `pom.xml`.
 
 ---
 
