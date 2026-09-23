@@ -13,6 +13,7 @@
         <module>00_Java</module>
         <module>01_HolaMundoWeb</module>
         <module>02_ServletsRequest</module>
+        <module>03_HTTP</module>
     </modules>
 
     <properties>
