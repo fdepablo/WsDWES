@@ -11,7 +11,7 @@ No pretende construir todavía una API REST completa. Utiliza un recurso simulad
 - Utilizar `GET`, `POST`, `PUT` y `DELETE` según su finalidad habitual.
 - Comprender las propiedades de seguridad e idempotencia de los métodos.
 - Interpretar las cinco familias de códigos de estado.
-- Devolver estados como `200`, `201`, `204`, `303`, `400`, `404`, `409` y `415`.
+- Devolver estados como `200`, `201`, `307`, `400`, `404`, `409` y `415`.
 - Utilizar las cabeceras `Content-Type` y `Location`.
 - Distinguir una redirección HTTP de un `forward` interno.
 - Inspeccionar mensajes con Postman y `curl`.
@@ -22,47 +22,50 @@ No pretende construir todavía una API REST completa. Utiliza un recurso simulad
 - Maven 3.9 o compatible.
 - Apache Tomcat 11.
 - IntelliJ IDEA. En la edición Community puede utilizarse Smart Tomcat.
-- Postman o `curl`. Windows 10 y 11 incluyen habitualmente `curl.exe`.
+- [Postman para escritorio](https://www.postman.com/downloads/) o `curl`. Descarga Postman antes de comenzar las pruebas; Windows 10 y 11 incluyen habitualmente `curl.exe`.
 
 ## Formato de los mensajes HTTP
 
 ### Petición
 
-Una petición HTTP contiene una línea inicial, cabeceras, una línea vacía y, opcionalmente, un cuerpo:
+Observa las partes de esta petición que envía un formulario HTML mediante `POST`. La línea vacía separa las cabeceras del cuerpo:
 
 ```http
-POST /http/recursos HTTP/1.1
+POST /formulario HTTP/1.1
 Host: localhost:8080
-Content-Type: text/plain;charset=UTF-8
-Accept: */*
-Content-Length: 13
+Content-Type: application/x-www-form-urlencoded;charset=UTF-8
+Accept: text/html
 
-Nuevo recurso
+nombre=Ana&curso=DWES
 ```
 
-- `POST` es el método.
-- `/http/recursos` es el recurso solicitado.
-- `HTTP/1.1` es la versión representada en este ejemplo textual.
-- `Host`, `Content-Type`, `Accept` y `Content-Length` son cabeceras.
-- `Nuevo recurso` es el cuerpo.
+- **Línea inicial:** `POST /formulario HTTP/1.1`. Indica el método (`POST`), la ruta solicitada (`/formulario`) y la versión de HTTP (`HTTP/1.1`).
+- **Cabeceras:** las líneas `Host`, `Content-Type` y `Accept`. Cada una aporta información sobre la petición; aquí `Content-Type` indica cómo se han codificado los datos del formulario y `Accept` señala que el cliente puede recibir HTML.
+- **Línea vacía:** marca el final de las cabeceras. No es una cabecera ni forma parte del cuerpo.
+- **Cuerpo:** `nombre=Ana&curso=DWES`. Contiene dos parámetros del formulario, separados por `&`. En este envío por `POST` viajan en el cuerpo. No todas las peticiones tienen cuerpo; por ejemplo, el `GET` de este módulo no lo necesita.
 
 ### Respuesta
 
-Una posible respuesta del servidor sería:
+El servidor podría contestar con una breve página HTML. Sus partes siguen el mismo orden:
 
 ```http
-HTTP/1.1 201 Created
-Content-Type: text/plain;charset=UTF-8
-Location: /http/recursos/15
-Content-Length: 45
+HTTP/1.1 200 OK
+Content-Type: text/html;charset=UTF-8
 
-Recurso creado con el contenido: Nuevo recurso
+<!doctype html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Formulario recibido</title></head>
+<body><h1>Hola, Ana</h1><p>Curso: DWES</p></body>
+</html>
 ```
 
-La primera línea contiene la versión, el código y su descripción. Después aparecen las cabeceras, una línea vacía y el cuerpo.
+- **Línea de estado:** `HTTP/1.1 200 OK`. Contiene la versión de HTTP, el código de estado (`200`) y su descripción (`OK`). A diferencia de la petición, no contiene método ni ruta.
+- **Cabeceras:** aquí `Content-Type` indica que el cuerpo de la respuesta es HTML codificado en UTF-8.
+- **Línea vacía:** separa las cabeceras del cuerpo de la respuesta.
+- **Cuerpo:** el documento HTML que recibe y muestra el navegador. Una respuesta puede no tener cuerpo, como ocurre con `204 No Content`.
 
 > [!NOTE]
-> Postman y `curl` presentan los mensajes de forma más cómoda y pueden ocultar algunos detalles de transporte. Los bloques anteriores son representaciones didácticas; cabeceras como `Content-Length`, `Date` o `Connection` pueden variar porque Tomcat o el cliente las calculan.
+> Estos mensajes ilustran la estructura de HTTP; `/formulario` no es una ruta de este módulo. El servlet `/recursos` acepta y devuelve texto plano, como se muestra en las pruebas posteriores. Postman y `curl` pueden ocultar algunos detalles de transporte; cabeceras como `Content-Length`, `Date` o `Connection` pueden variar porque Tomcat o el cliente las calculan.
 
 ## Métodos principales
 
@@ -81,18 +84,18 @@ Los formularios HTML permiten directamente `GET` y `POST`. Para practicar `PUT` 
 
 | Familia | Significado | Ejemplos |
 |---|---|---|
-| `1xx` | Respuesta informativa | `100 Continue` |
-| `2xx` | La petición se procesó correctamente | `200 OK`, `201 Created`, `204 No Content` |
-| `3xx` | El cliente debe realizar otra acción | `301 Moved Permanently`, `303 See Other` |
-| `4xx` | Hay un problema con la petición del cliente | `400`, `401`, `403`, `404`, `409`, `415` |
-| `5xx` | El servidor no pudo completar una petición válida | `500`, `503` |
+| `1xx` | Respuestas informativas | `100 Continue` |
+| `2xx` | Éxitos | `200 OK`, `201 Created`, `204 No Content` |
+| `3xx` | Redirecciones | `307 Temporary Redirect` |
+| `4xx` | Errores del cliente | `400`, `401`, `403`, `404`, `409`, `415` |
+| `5xx` | Errores del servidor | `500`, `503` |
 
 Algunos códigos especialmente importantes son:
 
 - `200 OK`: operación correcta con una representación en la respuesta.
 - `201 Created`: se ha creado un recurso; suele acompañarse de `Location`.
 - `204 No Content`: operación correcta sin cuerpo de respuesta.
-- `303 See Other`: indica otra dirección que el cliente debe consultar con `GET`.
+- `307 Temporary Redirect`: indica una ubicación temporal; al seguirla, el cliente conserva el método de la petición.
 - `400 Bad Request`: los datos o la forma de la petición no son válidos.
 - `401 Unauthorized`: falta autenticación válida, pese a su nombre histórico.
 - `403 Forbidden`: la identidad puede ser conocida, pero no tiene permiso.
@@ -102,6 +105,8 @@ Algunos códigos especialmente importantes son:
 - `415 Unsupported Media Type`: el formato del cuerpo no es aceptado.
 - `500 Internal Server Error`: se produjo un fallo inesperado en el servidor.
 - `503 Service Unavailable`: el servicio no está disponible temporalmente.
+
+Para una eliminación correcta, este ejemplo usa `200 OK` y devuelve un mensaje de confirmación. También sería válido `204 No Content` si no hubiera contenido que enviar: ambos estados indican éxito.
 
 ## Cabeceras HTTP importantes
 
@@ -162,7 +167,7 @@ La lista completa y oficial de tipos registrados puede consultarse en el [regist
 `Content-Type` no debe confundirse con `Accept`:
 
 ```http
-POST /http/recursos HTTP/1.1
+POST /recursos HTTP/1.1
 Content-Type: text/plain;charset=UTF-8
 Accept: application/json
 
@@ -176,37 +181,7 @@ En esa petición, `Content-Type` dice que el cliente **envía texto**, mientras 
 
 ### `Cookie` y `Set-Cookie`
 
-HTTP no recuerda automáticamente las peticiones anteriores. Las cookies permiten que el cliente conserve un dato pequeño y lo envíe de nuevo en peticiones posteriores.
-
-El servidor crea o actualiza una cookie mediante una cabecera de respuesta `Set-Cookie`:
-
-```http
-HTTP/1.1 200 OK
-Set-Cookie: tema=oscuro; Path=/; Max-Age=3600; HttpOnly; Secure; SameSite=Lax
-```
-
-Si la cookie continúa vigente y coincide con el dominio y la ruta solicitados, el navegador la devuelve mediante la cabecera de petición `Cookie`:
-
-```http
-GET /preferencias HTTP/1.1
-Host: ejemplo.com
-Cookie: tema=oscuro
-```
-
-Por tanto, son cabeceras diferentes:
-
-- `Set-Cookie` viaja normalmente del servidor al cliente y contiene una cookie junto con sus atributos.
-- `Cookie` viaja del cliente al servidor y reúne los nombres y valores aplicables a esa petición.
-
-Algunos atributos importantes de `Set-Cookie` son:
-
-- `Path`: limita las rutas en las que debe enviarse.
-- `Max-Age` o `Expires`: establece su duración. Sin ellos suele ser una cookie de sesión.
-- `HttpOnly`: impide que JavaScript acceda a ella, lo que reduce determinados riesgos de robo.
-- `Secure`: hace que el navegador solo la envíe mediante HTTPS, salvo consideraciones especiales de desarrollo local.
-- `SameSite`: controla su envío en peticiones iniciadas desde otros sitios y ayuda a reducir ataques CSRF.
-
-Las cookies no deben utilizarse para guardar contraseñas ni información sensible directamente. En la gestión de sesiones suele almacenarse en el navegador únicamente un identificador aleatorio; los datos de la sesión permanecen en el servidor.
+HTTP no recuerda automáticamente las peticiones anteriores. El servidor puede enviar una cookie con `Set-Cookie` y el cliente devolverla en otra petición con `Cookie`. Sus atributos y usos se estudiarán en el módulo 06, dedicado a las cookies.
 
 ### `Location`
 
@@ -214,14 +189,14 @@ Las cookies no deben utilizarse para guardar contraseñas ni información sensib
 
 ```http
 HTTP/1.1 201 Created
-Location: /http/recursos/15
+Location: /recursos/15
 ```
 
 Aquí indica dónde se encuentra el recurso creado. En una respuesta `3xx`, señala la URL que el cliente debe consultar:
 
 ```http
-HTTP/1.1 303 See Other
-Location: /http/recursos/15
+HTTP/1.1 307 Temporary Redirect
+Location: /recursos/15
 ```
 
 El ejemplo `/redirigir` permite observar este segundo caso.
@@ -240,17 +215,7 @@ El ejemplo `/redirigir` permite observar este segundo caso.
         └── index.html
 ```
 
-`RecursoServlet` implementa los cuatro métodos principales. `RedireccionServlet` devuelve deliberadamente un `303` y una cabecera `Location`.
-
-## Cómo compilar
-
-Desde la raíz del workspace:
-
-```bash
-mvn -pl 03_HTTP -am clean package
-```
-
-El resultado será `03_HTTP/target/03_HTTP-1.0-SNAPSHOT.war`.
+`RecursoServlet` implementa los cuatro métodos principales. `RedireccionServlet` devuelve deliberadamente un `307` y una cabecera `Location`.
 
 ## Cómo ejecutar con Smart Tomcat
 
@@ -259,13 +224,43 @@ El resultado será `03_HTTP/target/03_HTTP-1.0-SNAPSHOT.war`.
 3. Selecciona Tomcat 11.
 4. Usa `03_HTTP/src/main/webapp` como **Deployment Directory**.
 5. Selecciona `03_HTTP` en **Use classpath of module**.
-6. Utiliza `/http` como **Context Path**.
+6. Utiliza `/` como **Context Path**.
 7. Ejecuta Tomcat.
 
 > [!WARNING]
 > **Deployment Directory** y **Use classpath of module** deben apuntar siempre a `03_HTTP`.
 
+## `forward` y redirección
+
+Un **`forward`** envía el trabajo a otro recurso dentro del servidor, sin pedir al navegador una segunda petición. El servlet pasa la petición y la respuesta actuales a ese recurso; el contenedor puede envolver esos objetos, pero pertenecen al mismo intercambio HTTP.
+
+Una **JSP** (*Jakarta Server Pages*) es una plantilla del servidor que combina HTML con datos dinámicos para generar una página. En el siguiente módulo veremos cómo un servlet prepara los datos y hace `forward` a una JSP para presentarlos.
+
+Este sería el recorrido de una petición típica del navegador al servidor:
+
+```text
+Navegador ── GET /inicio ──► servlet ── forward ──► JSP
+Navegador ◄──────────────────── respuesta HTML ─────┘
+```
+
+Como se conserva la petición, la JSP de destino puede leer los atributos que el servlet haya guardado con `request.setAttribute(...)` o acceder a los parámetros enviados con `request.getParameter(...)`. El navegador recibe una sola respuesta y su URL no cambia. El `forward` debe realizarse antes de que se haya enviado la respuesta al cliente.
+
+En una **redirección**, el servidor termina la primera petición con una respuesta `3xx` y la cabecera `Location`. El navegador lee esa respuesta y, si sigue la redirección, envía otra petición a la dirección indicada:
+
+```text
+Navegador ── GET /redirigir ──► servidor
+Navegador ◄── 307 + Location ── servidor
+Navegador ── GET /recursos/15 ► servidor
+```
+
+Tomcat crea un `HttpServletRequest` y un `HttpServletResponse` para atender la primera petición. Al recibir la segunda, crea otros objetos para esa nueva petición y su respuesta. Por eso, los atributos guardados solo en el primer `request` no llegan al servlet de destino. Los parámetros de la primera petición tampoco se trasladan automáticamente: solo llegarían si se incluyeran en la URL de destino. En este ejemplo, el código `307` indica que `/recursos/15` es un destino temporal; al seguirlo, el navegador conserva el método `GET` y muestra la nueva ruta en la barra de direcciones. A diferencia de `301`, `307` no indica un cambio permanente ni se guarda en caché por defecto.
+
 ## Pruebas con Postman
+
+Las operaciones de este módulo son simuladas: `POST`, `PUT` y `DELETE` devuelven respuestas para practicar HTTP, pero no dan de alta, modifican ni eliminan recursos reales. No hay base de datos ni se guardan cambios; el recurso `15` sigue disponible después de cada prueba.
+
+> [!NOTE]
+> Las URL siguientes corresponden a **Smart Tomcat** con el contexto raíz `/`. Si usas **Tomcat Server** y el WAR está desplegado con **Application context** `/03_HTTP_war`, añade ese contexto delante de cada ruta: `http://localhost:8080/03_HTTP_war/recursos/15` para consultar el recurso y `http://localhost:8080/03_HTTP_war/redirigir` para observar la redirección. Aplica el mismo cambio a las pruebas con `curl`. El nombre del artefacto y el contexto de despliegue son ajustes distintos; comprueba el valor de **Application context** en tu configuración.
 
 En lugar de importar una colección, crea cada petición manualmente. El objetivo es identificar qué partes del mensaje HTTP estás configurando.
 
@@ -273,7 +268,7 @@ En lugar de importar una colección, crea cada petición manualmente. El objetiv
 
 1. Crea una nueva petición.
 2. Selecciona el método `GET`.
-3. Escribe `http://localhost:8080/http/recursos/15`.
+3. Escribe `http://localhost:8080/recursos/15`.
 4. Pulsa **Send**.
 5. Comprueba el estado `200 OK`.
 6. Abre **Headers** y localiza `Content-Type` y `X-Ejemplo`.
@@ -284,7 +279,7 @@ Cambia el identificador `15` por `99` y repite la petición. En este caso debes 
 ### Crear un recurso
 
 1. Crea una petición con el método `POST`.
-2. Usa la URL `http://localhost:8080/http/recursos`.
+2. Usa la URL `http://localhost:8080/recursos`.
 3. Abre **Headers** y añade `Content-Type` con el valor `text/plain;charset=UTF-8`.
 4. Abre **Body**, selecciona **raw** y elige **Text** como formato.
 5. Escribe `Nuevo recurso`.
@@ -296,7 +291,7 @@ Cambia el cuerpo por `duplicado`. La respuesta debe ser `409 Conflict`.
 ### Actualizar un recurso
 
 1. Crea una petición con el método `PUT`.
-2. Usa la URL `http://localhost:8080/http/recursos/15`.
+2. Usa la URL `http://localhost:8080/recursos/15`.
 3. Añade la cabecera `Content-Type: text/plain;charset=UTF-8`.
 4. En **Body**, selecciona **raw**, elige **Text** y escribe `Recurso actualizado`.
 5. Envía la petición y comprueba el estado `200 OK`.
@@ -304,91 +299,128 @@ Cambia el cuerpo por `duplicado`. La respuesta debe ser `409 Conflict`.
 ### Eliminar un recurso
 
 1. Crea una petición con el método `DELETE`.
-2. Usa la URL `http://localhost:8080/http/recursos/15`.
+2. Usa la URL `http://localhost:8080/recursos/15`.
 3. Pulsa **Send**.
-4. Comprueba el estado `204 No Content`.
-5. Observa que la respuesta no contiene cuerpo.
+4. Comprueba el estado `200 OK`.
+5. Observa el mensaje `Recurso 15 eliminado.` en el cuerpo de la respuesta.
 
 ### Observar una redirección
 
-1. Desactiva temporalmente **Automatically follow redirects** en la configuración de Postman.
-2. Crea una petición `GET` a `http://localhost:8080/http/redirigir`.
+1. Desactiva temporalmente **Automatically follow redirects** en la configuración de Postman. Dentro de **General**
+2. Crea una petición `GET` a `http://localhost:8080/redirigir`.
 3. Pulsa **Send**.
-4. Comprueba el estado `303 See Other` y la cabecera `Location`.
+4. Comprueba el estado `307 Temporary Redirect` y la cabecera `Location`.
 5. Vuelve a activar el seguimiento automático cuando termines la práctica.
 
-Si no se desactiva esa opción, Postman realiza automáticamente la segunda petición y puede mostrar directamente el `200 OK` del recurso de destino, ocultando la respuesta intermedia `303`.
+Si no se desactiva esa opción, Postman realiza automáticamente la segunda petición y puede mostrar directamente el `200 OK` del recurso de destino, ocultando la respuesta intermedia `307`.
 
 ## Pruebas equivalentes con `curl`
 
-La opción `-i` incluye las cabeceras de respuesta. En Windows se utiliza `curl.exe` para evitar posibles alias de PowerShell.
+La opción `-i` incluye las cabeceras de respuesta. En Windows se utiliza `curl.exe` para evitar posibles alias de PowerShell. En cada prueba, elige el bloque correspondiente a Smart Tomcat (contexto `/`) o Tomcat Server (contexto `/03_HTTP_war`).
 
 ### Consultar un recurso: `200 OK`
 
+Smart Tomcat:
+
 ```bash
-curl.exe -i http://localhost:8080/http/recursos/15
+curl.exe -i http://localhost:8080/recursos/15
+```
+
+Tomcat Server:
+
+```bash
+curl.exe -i http://localhost:8080/03_HTTP_war/recursos/15
 ```
 
 ### Consultar un recurso inexistente: `404 Not Found`
 
+Smart Tomcat:
+
 ```bash
-curl.exe -i http://localhost:8080/http/recursos/99
+curl.exe -i http://localhost:8080/recursos/99
+```
+
+Tomcat Server:
+
+```bash
+curl.exe -i http://localhost:8080/03_HTTP_war/recursos/99
 ```
 
 ### Crear un recurso: `201 Created`
 
+Smart Tomcat:
+
 ```bash
-curl.exe -i -X POST -H "Content-Type: text/plain;charset=UTF-8" --data "Nuevo recurso" http://localhost:8080/http/recursos
+curl.exe -i -X POST -H "Content-Type: text/plain;charset=UTF-8" --data "Nuevo recurso" http://localhost:8080/recursos
+```
+
+Tomcat Server:
+
+```bash
+curl.exe -i -X POST -H "Content-Type: text/plain;charset=UTF-8" --data "Nuevo recurso" http://localhost:8080/03_HTTP_war/recursos
 ```
 
 Observa tanto el cuerpo como la cabecera `Location`.
 
 ### Provocar un conflicto: `409 Conflict`
 
+Smart Tomcat:
+
 ```bash
-curl.exe -i -X POST -H "Content-Type: text/plain;charset=UTF-8" --data "duplicado" http://localhost:8080/http/recursos
+curl.exe -i -X POST -H "Content-Type: text/plain;charset=UTF-8" --data "duplicado" http://localhost:8080/recursos
+```
+
+Tomcat Server:
+
+```bash
+curl.exe -i -X POST -H "Content-Type: text/plain;charset=UTF-8" --data "duplicado" http://localhost:8080/03_HTTP_war/recursos
 ```
 
 ### Actualizar el recurso: `200 OK`
 
-```bash
-curl.exe -i -X PUT -H "Content-Type: text/plain;charset=UTF-8" --data "Recurso actualizado" http://localhost:8080/http/recursos/15
-```
-
-### Eliminar el recurso: `204 No Content`
+Smart Tomcat:
 
 ```bash
-curl.exe -i -X DELETE http://localhost:8080/http/recursos/15
+curl.exe -i -X PUT -H "Content-Type: text/plain;charset=UTF-8" --data "Recurso actualizado" http://localhost:8080/recursos/15
 ```
 
-La respuesta no debe contener cuerpo.
-
-### Observar una redirección: `303 See Other`
+Tomcat Server:
 
 ```bash
-curl.exe -i http://localhost:8080/http/redirigir
+curl.exe -i -X PUT -H "Content-Type: text/plain;charset=UTF-8" --data "Recurso actualizado" http://localhost:8080/03_HTTP_war/recursos/15
 ```
 
-Sin `-L`, `curl` muestra el `303` y no sigue automáticamente la dirección indicada en `Location`. Puedes repetir la petición con `-L` para comparar el resultado.
+### Eliminar el recurso: `200 OK`
 
-## Redirección y `forward`
+Smart Tomcat:
 
-Una redirección es visible para el cliente y provoca otra petición:
-
-```text
-Navegador ── GET /redirigir ──► servidor
-Navegador ◄── 303 + Location ── servidor
-Navegador ── GET /recursos/15 ► servidor
+```bash
+curl.exe -i -X DELETE http://localhost:8080/recursos/15
 ```
 
-Un `forward` ocurre enteramente dentro del servidor:
+Tomcat Server:
 
-```text
-Navegador ── GET /inicio ──► servlet ── forward ──► JSP
-Navegador ◄──────────────────── respuesta HTML ─────┘
+```bash
+curl.exe -i -X DELETE http://localhost:8080/03_HTTP_war/recursos/15
 ```
 
-En el `forward` se conserva la petición y la URL del navegador no cambia. El siguiente módulo utiliza este mecanismo para conectar un servlet con una JSP.
+La respuesta contiene el mensaje `Recurso 15 eliminado.`.
+
+### Observar una redirección: `307 Temporary Redirect`
+
+Smart Tomcat:
+
+```bash
+curl.exe -i http://localhost:8080/redirigir
+```
+
+Tomcat Server:
+
+```bash
+curl.exe -i http://localhost:8080/03_HTTP_war/redirigir
+```
+
+Sin `-L`, `curl` muestra el `307` y no sigue automáticamente la dirección indicada en `Location`. Puedes repetir la petición con `-L` para comparar el resultado.
 
 ## Cómo comprobar que funciona
 
@@ -397,8 +429,8 @@ En el `forward` se conserva la petición y la URL del navegador no cambia. El si
 - `POST /recursos` devuelve `201` y `Location`.
 - Un cuerpo vacío devuelve `400`.
 - Un cuerpo con un tipo diferente de `text/plain` devuelve `415`.
-- `DELETE /recursos/15` devuelve `204` sin cuerpo.
-- `/redirigir` devuelve `303` antes de seguir la redirección.
+- `DELETE /recursos/15` devuelve `200` con un mensaje de confirmación.
+- `/redirigir` devuelve `307` antes de seguir la redirección.
 - Un método no implementado por el servlet produce `405` automáticamente.
 
 ## Explicación guiada
@@ -414,7 +446,7 @@ En la respuesta, `setStatus` fija el código, `setHeader` añade una cabecera y 
 - Confundir el método HTTP con el nombre de una operación Java.
 - Enviar un cuerpo sin indicar su `Content-Type`.
 - Interpretar `POST` como una medida de cifrado o seguridad.
-- Devolver siempre `200`, incluso cuando se ha creado, eliminado o rechazado algo.
+- Devolver siempre `200`, incluso cuando se ha creado o rechazado algo.
 - Incluir un cuerpo en una respuesta `204 No Content`.
 - Seguir automáticamente una redirección y no observar la respuesta `3xx` intermedia.
 - Confundir `401 Unauthorized` con `403 Forbidden`.

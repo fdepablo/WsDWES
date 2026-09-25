@@ -11,10 +11,19 @@ import java.io.IOException;
 @WebServlet("/redirigir")
 public class RedireccionServlet extends HttpServlet {
 
+    /**
+     * Responde a GET con 307 y señala la ubicación temporal del recurso.
+     * Por ejemplo, GET /redirigir devuelve Location: /recursos/15
+     * si la aplicación está desplegada en el contexto raíz.
+     *
+     * @param request petición utilizada para conocer la ruta de contexto
+     * @param response respuesta en la que se escriben el estado y la cabecera
+     * @throws IOException si el contenedor no puede procesar la respuesta
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+        response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
         response.setHeader("Location", request.getContextPath() + "/recursos/15");
     }
 }
