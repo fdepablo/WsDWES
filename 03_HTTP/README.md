@@ -16,12 +16,10 @@ No pretende construir todavía una API REST completa. Utiliza un recurso simulad
 - Distinguir una redirección HTTP de un `forward` interno.
 - Inspeccionar mensajes con Postman y `curl`.
 
-## Requisitos
+## Requisitos específicos
 
-- Java 25.
-- Maven 3.9 o compatible.
-- Apache Tomcat 11.
-- IntelliJ IDEA. En la edición Community puede utilizarse Smart Tomcat.
+Los requisitos comunes están en el [README raíz](../README.md).
+
 - [Postman para escritorio](https://www.postman.com/downloads/) o `curl`. Descarga Postman antes de comenzar las pruebas; Windows 10 y 11 incluyen habitualmente `curl.exe`.
 
 ## Formato de los mensajes HTTP

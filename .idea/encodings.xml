@@ -7,6 +7,26 @@
     <file url="file://$PROJECT_DIR$/01_HolaMundoWeb/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/02_ServletsRequest/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/02_ServletsRequest/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/03_HTTP/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/03_HTTP/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/03_JSP/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/03_JSP/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/03_ServletFormulario/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/03_ServletFormulario/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/04_Formulario/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/04_Formulario/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/04_JSP/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/04_JSP/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/05_Formulario/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/05_Formulario/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/06_Sesion/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/06_Sesion/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/07_JDBC/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/07_JDBC/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/08_MVC/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/08_MVC/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/09_JPA/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/09_JPA/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>

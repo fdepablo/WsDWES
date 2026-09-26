@@ -13,12 +13,11 @@ Este módulo muestra cómo recibe un servlet los datos enviados por el navegador
 - Propagar un dato a otra petición mediante un campo oculto.
 - Evitar que un valor introducido por el usuario se interprete como HTML.
 
-## Requisitos
+## Requisitos específicos
 
-- Java 25.
-- Maven 3.9 o una versión compatible.
-- Apache Tomcat 11.
-- IntelliJ IDEA. En la edición Community puede utilizarse el plugin Smart Tomcat.
+Los requisitos comunes están en el [README raíz](../README.md).
+
+- Haber realizado el primer servlet de `01_HolaMundoWeb`.
 
 ## Recorrido del ejemplo
 

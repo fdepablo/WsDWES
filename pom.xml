@@ -14,6 +14,13 @@
         <module>01_HolaMundoWeb</module>
         <module>02_ServletsRequest</module>
         <module>03_HTTP</module>
+        <module>04_JSP</module>
+        <module>05_Formulario</module>
+        <module>06_Sesion</module>
+        <module>07_JDBC</module>
+        <module>08_MVC</module>
+        <module>09_JPA</module>
+        <module>10_JPARelaciones</module>
     </modules>
 
     <properties>

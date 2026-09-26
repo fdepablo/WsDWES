@@ -1,6 +1,6 @@
-# 🌐 Guía de Configuración: Servlets con Tomcat 11 y Java 25 en IntelliJ Community
+# 🌐 Primer servlet y configuración web en IntelliJ Community
 
-Esta guía explica cómo configurar un entorno de desarrollo web profesional basado en **módulos independientes** utilizando **IntelliJ IDEA Community**, **Maven**, **Java 25** y **Apache Tomcat 11**.
+Esta guía explica cómo configurar y ejecutar el primer módulo web con IntelliJ Community y Smart Tomcat. Los requisitos comunes del workspace están en el [README raíz](../README.md); aquí se desarrolla la configuración específica de Tomcat y el servlet.
 
 ---
 
