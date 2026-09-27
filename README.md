@@ -9,7 +9,7 @@ Ejemplos progresivos de **Desarrollo Web en Entorno Servidor (DWES)** para el ci
 - **Apache Tomcat 11** solo para los ejemplos con servlets o JSP. Los ejemplos de consola no lo necesitan.
 - **H2** se incluye como dependencia en los ejemplos de base de datos y funciona sin instalar un servidor. **MariaDB de XAMPP** es una alternativa opcional; cada módulo explica su configuración.
 
-Los módulos usan las APIs actuales de **Jakarta EE** (`jakarta.*`), Maven y codificación UTF-8. No hay que instalar Spring para los ejemplos presentes.
+Los módulos usan Maven y codificación UTF-8; los ejemplos Jakarta EE emplean `jakarta.*`. `11_SpringBoot` descarga sus dependencias mediante Maven y no requiere instalar Spring por separado.
 
 ## Recorrido de los módulos
 
@@ -28,6 +28,10 @@ Sigue el orden numérico; cada README contiene objetivos, explicación del códi
 | [`08_MVC`](08_MVC/README.md) | Separación entre controlador, servicio, persistencia y vistas. | Web |
 | [`09_JPA`](09_JPA/README.md) | Primeras operaciones JPA: **primero consola y después web**. | Consola + web |
 | [`10_JPARelaciones`](10_JPARelaciones/README.md) | Relaciones JPA unidireccionales. | Consola |
+| [`11_SpringBoot`](11_SpringBoot/README.md) | Contenedor Spring e inyección de dependencias con Spring Boot. | Consola |
+| [`12_SpringDataJPA`](12_SpringDataJPA/README.md) | Repositorios Spring Data JPA y consultas sobre H2. | Consola |
+| [`13_SpringMVC`](13_SpringMVC/README.md) | Spring MVC con controladores, formularios y vistas Thymeleaf. | Web con servidor integrado |
+| [`14_SpringREST`](14_SpringREST/README.md) | API REST con JSON, métodos HTTP y CRUD de personas sobre Spring Data JPA y H2. | Web con servidor integrado |
 
 ## Abrir y compilar
 
@@ -43,11 +47,13 @@ Sustituye `07_JDBC` por el nombre del módulo que estés estudiando. Para intent
 
 ## Ejecutar los ejemplos
 
-**Módulos de consola:** ejecuta la clase `main` indicada en el README del módulo desde IntelliJ. Compilar un JAR con Maven no significa que ese JAR incluya todas las dependencias para ejecutarlo por sí solo; IntelliJ usa el classpath del módulo. En `09_JPA`, realiza primero el recorrido de consola y después pasa a la parte web.
+**Módulos de consola:** ejecuta la clase `main` indicada en el README del módulo desde IntelliJ. Los JAR de los módulos Java anteriores a Spring Boot no incluyen por sí solos todas sus dependencias; IntelliJ usa el classpath del módulo. En cambio, el JAR de `11_SpringBoot` se puede ejecutar con `java -jar`. En `09_JPA`, realiza primero el recorrido de consola y después pasa a la parte web.
 
-**Módulos web:** necesitas Tomcat 11. En IntelliJ Community, una configuración de Smart Tomcat debe apuntar a `src/main/webapp` del módulo elegido como **Deployment Directory** y utilizar ese mismo módulo en **Use classpath of module**. Alternativamente, despliega en Tomcat el WAR generado por Maven. El **Context Path** determina el prefijo de la URL: si usas `/jdbc`, la ruta `/productos` se abre en `http://localhost:8080/jdbc/productos`. Si despliegas un WAR con otro contexto, cambia ese prefijo. Conserva una configuración de Tomcat por módulo para no mezclar directorios ni classpaths. La [guía del primer módulo](01_HolaMundoWeb/README.md) muestra la configuración inicial; cada README indica su ruta de comprobación.
+**Módulos web anteriores a Spring Boot:** necesitas Tomcat 11. En IntelliJ Community, una configuración de Smart Tomcat debe apuntar a `src/main/webapp` del módulo elegido como **Deployment Directory** y utilizar ese mismo módulo en **Use classpath of module**. Alternativamente, despliega en Tomcat el WAR generado por Maven. El **Context Path** determina el prefijo de la URL: si usas `/jdbc`, la ruta `/productos` se abre en `http://localhost:8080/jdbc/productos`. Si despliegas un WAR con otro contexto, cambia ese prefijo. Conserva una configuración de Tomcat por módulo para no mezclar directorios ni classpaths. La [guía del primer módulo](01_HolaMundoWeb/README.md) muestra la configuración inicial; cada README indica su ruta de comprobación.
 
-**Bases de datos:** `07_JDBC`, `08_MVC`, `09_JPA` y `10_JPARelaciones` incluyen H2 para empezar sin XAMPP. Si quieres usar MariaDB, sigue las instrucciones y el script SQL del módulo correspondiente. No copies contraseñas reales al repositorio. Los datos y la configuración de conexión de un módulo no deben suponerse compartidos por los demás.
+**`13_SpringMVC` y `14_SpringREST`:** son excepciones a las instrucciones de Smart Tomcat anteriores: Boot arranca su propio servidor al ejecutar `Aplicacion.main` o el JAR. Consulta sus README para las rutas y pruebas.
+
+**Bases de datos:** `07_JDBC`, `08_MVC`, `09_JPA`, `10_JPARelaciones`, `12_SpringDataJPA`, `13_SpringMVC` y `14_SpringREST` incluyen H2 para empezar sin XAMPP. El módulo 12 explica la alternativa MariaDB; los módulos 13 y 14 utilizan H2 y se centran en MVC y REST, respectivamente. No copies contraseñas reales al repositorio. Los datos y la configuración de conexión de un módulo no deben suponerse compartidos por los demás.
 
 ## Si algo falla
 

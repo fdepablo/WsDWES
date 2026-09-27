@@ -21,6 +21,10 @@
         <module>08_MVC</module>
         <module>09_JPA</module>
         <module>10_JPARelaciones</module>
+        <module>11_SpringBoot</module>
+        <module>12_SpringDataJPA</module>
+        <module>13_SpringMVC</module>
+        <module>14_SpringREST</module>
     </modules>
 
     <properties>

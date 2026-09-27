@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Catálogo de películas</title>
+</head>
+<body>
+<main>
+    <h1>Catálogo de películas</h1>
+    <p>Ejemplo de Spring MVC, Thymeleaf y Spring Data JPA. Los datos se guardan en H2 mientras la aplicación está encendida.</p>
+    <p><a th:href="@{/peliculas/nueva}">Añadir película</a></p>
+
+    <p th:if="${#lists.isEmpty(peliculas)}">Todavía no hay películas.</p>
+    <table th:unless="${#lists.isEmpty(peliculas)}">
+        <thead>
+        <tr><th scope="col">ID</th><th scope="col">Título</th><th scope="col">Género</th><th scope="col">Acciones</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="pelicula : ${peliculas}">
+            <td th:text="${pelicula.id}">1</td>
+            <td th:text="${pelicula.titulo}">Ejemplo</td>
+            <td th:text="${pelicula.genero}">Drama</td>
+            <td>
+                <a th:href="@{/peliculas/{id}/editar(id=${pelicula.id})}">Editar</a>
+                <form th:action="@{/peliculas/{id}/borrar(id=${pelicula.id})}" method="post">
+                    <button type="submit">Borrar</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

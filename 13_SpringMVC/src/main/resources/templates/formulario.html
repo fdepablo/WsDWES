@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${tituloPagina}">Formulario de película</title>
+</head>
+<body>
+<main>
+    <h1 th:text="${tituloPagina}">Formulario de película</h1>
+    <p th:if="${error}" role="alert" th:text="${error}">Error de validación</p>
+    <form th:action="${id == null} ? @{/peliculas} : @{/peliculas/{id}/editar(id=${id})}"
+          th:object="${formulario}" method="post">
+        <p>
+            <label for="titulo">Título</label>
+            <input id="titulo" type="text" th:field="*{titulo}" required>
+        </p>
+        <p>
+            <label for="genero">Género</label>
+            <input id="genero" type="text" th:field="*{genero}" required>
+        </p>
+        <button type="submit">Guardar</button>
+    </form>
+    <p><a th:href="@{/peliculas}">Volver al listado</a></p>
+</main>
+</body>
+</html>

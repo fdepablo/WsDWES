@@ -27,6 +27,14 @@
     <file url="file://$PROJECT_DIR$/08_MVC/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/09_JPA/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/09_JPA/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/10_JPARelaciones/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/10_JPARelaciones/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/11_SpringBoot/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/12_SpringBootMVC/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/12_SpringDataJPA/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/13_SpringBootMVC/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/13_SpringMVC/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/14_SpringREST/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>
