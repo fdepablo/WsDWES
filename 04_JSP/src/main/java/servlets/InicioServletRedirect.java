@@ -24,6 +24,7 @@ public class InicioServletRedirect extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         request.setAttribute("mensaje", "Dato creado en InicioServletRedirect");
-        response.sendRedirect(request.getContextPath() + "/resultado-redirect.jsp");
+        response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+        response.setHeader("Location", request.getContextPath() + "/resultado-redirect.jsp");
     }
 }

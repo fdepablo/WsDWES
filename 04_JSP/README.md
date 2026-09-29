@@ -9,7 +9,7 @@ Este módulo introduce JSP como tecnología de vistas y compara dos recorridos: 
 - Crear atributos con `HttpServletRequest#setAttribute`.
 - Diferenciar los parámetros enviados por el cliente de los atributos creados en el servidor.
 - Transferir una petición con `RequestDispatcher#forward`.
-- Comparar `forward` con `sendRedirect` mediante dos servlets.
+- Comparar `forward` con una redirección temporal `307` mediante dos servlets.
 - Mostrar atributos mediante Expression Language (`${...}`).
 - Acceder desde EL a las propiedades de un objeto Java.
 - Proteger las JSP colocándolas dentro de `WEB-INF`.
@@ -26,8 +26,6 @@ Los requisitos comunes están en el [README raíz](../README.md).
 ### Una JSP es una vista
 
 Tomcat transforma internamente una JSP en un servlet. Sin embargo, no utilizaremos la JSP como lugar para escribir lógica Java. El servlet se encarga de preparar los datos y la JSP se limita a generar la presentación.
-
-Los antiguos scriptlets `<% ... %>` y las expresiones `<%= ... %>` permiten incrustar Java, pero mezclan responsabilidades y dificultan el mantenimiento. Este módulo utiliza Expression Language en su lugar.
 
 ### Separación de responsabilidades con MVC
 
@@ -157,8 +155,6 @@ Las JSP de este módulo también usan otras expresiones de EL:
 - `empty requestScope.mensaje` comprueba si el atributo `mensaje` no existe o está vacío. En `resultado-redirect.jsp` se cumple porque la redirección crea otra petición.
 - `${condición ? valorSiSeCumple : valorSiNoSeCumple}` elige uno de dos textos. La JSP de la redirección lo usa para mostrar «Ninguno: esta es otra petición.» cuando no encuentra el atributo.
 
-Estas expresiones son EL, no etiquetas JSTL. Las etiquetas `<c:...>` se introducen en `05_Formulario` y se vuelven a utilizar en `07_JDBC` para condiciones, recorridos y salida escapada.
-
 ### `forward` mantiene la misma petición
 
 `forward` transfiere el procesamiento internamente a la JSP. El navegador no realiza una segunda petición y los atributos continúan disponibles. La dirección del navegador sigue mostrando `/inicio-forward` si el contexto es `/`.
@@ -172,15 +168,15 @@ request.getRequestDispatcher("/WEB-INF/vistas/inicio.jsp")
 
 El servlet puede elegir distintas vistas según el resultado del procesamiento. Por ejemplo, podría enviar una operación correcta a una JSP de confirmación y una operación incorrecta a una JSP de error. El módulo `05_Formulario` aplica esta idea.
 
-El segundo servlet usa `sendRedirect` para pedir al navegador otra petición. Esta llamada devuelve `302 Found` por defecto y envía la nueva URL en la cabecera `Location`. La comparación es:
+El segundo servlet responde con `307 Temporary Redirect` y la cabecera `Location`, igual que en `03_HTTP`. El navegador realiza otra petición al destino y conserva el método HTTP original; en este ejemplo, sigue siendo `GET`. La comparación es:
 
-| `forward` | `sendRedirect` |
+| `forward` | Redirección `307` |
 |---|---|
 | La transferencia ocurre dentro del servidor. | El servidor pide al navegador que realice otra petición. |
 | Se conserva el mismo objeto `request`. | Se crea una petición nueva. |
 | Se conservan los atributos de la petición. | Los atributos de la petición original se pierden. |
 | La URL del navegador no cambia. | La URL del navegador cambia. |
-| No hay respuesta de redirección intermedia. | El navegador recibe primero `302` y después solicita la vista. |
+| No hay respuesta de redirección intermedia. | El navegador recibe primero `307` y después solicita la vista. |
 | Se usa normalmente para llegar a una vista interna. | Se usa para indicar al cliente que visite otra URL. |
 
 ### Vistas bajo `WEB-INF`
@@ -211,7 +207,7 @@ El navegador puede abrir directamente el `index.html` situado en `webapp`. En ca
 1. El navegador abre `index.html`, una página pública con dos enlaces.
 2. Con **forward**, solicita `GET /inicio-forward`. `InicioServletForward` crea los datos y los guarda como atributos de la petición.
 3. El servlet hace `forward` a `/WEB-INF/vistas/inicio.jsp`. La JSP usa EL para mostrar los datos y la URL no cambia.
-4. Con **redirect**, solicita `GET /inicio-redirect`. `InicioServletRedirect` guarda un atributo y responde con una redirección a `/resultado-redirect.jsp`.
+4. Con **redirect**, solicita `GET /inicio-redirect`. `InicioServletRedirect` guarda un atributo y responde con `307` y `Location: /resultado-redirect.jsp` (precedido del contexto de la aplicación si lo hay).
 5. El navegador solicita esa JSP en una segunda petición. La URL cambia y el atributo creado por el servlet ya no está disponible.
 
 ## Cómo compilar
@@ -246,7 +242,7 @@ Si usas **Tomcat Server** con el WAR desplegado en **Application context** `/04_
 - El módulo y el ciclo proceden del objeto `Curso`.
 - Al recargar cambian la fecha o el número.
 - La URL continúa siendo `/inicio-forward` después del `forward` (o `/04_JSP_war/inicio-forward` con Tomcat Server).
-- El enlace **redirect** termina en `/resultado-redirect.jsp` (o `/04_JSP_war/resultado-redirect.jsp`) y muestra «Ninguno: esta es otra petición.»; en la pestaña **Red** del navegador pueden observarse las dos peticiones y el `302` intermedio.
+- El enlace **redirect** termina en `/resultado-redirect.jsp` (o `/04_JSP_war/resultado-redirect.jsp`) y muestra «Ninguno: esta es otra petición.»; en la pestaña **Red** del navegador pueden observarse las dos peticiones, el `307` intermedio y su cabecera `Location`.
 - El enlace para abrir la JSP protegida directamente devuelve `404`: la URL es `/WEB-INF/vistas/inicio.jsp` con Smart Tomcat y `/04_JSP_war/WEB-INF/vistas/inicio.jsp` con Tomcat Server.
 
 ## Explicación guiada
@@ -257,13 +253,13 @@ La JSP contiene HTML normal y pequeñas expresiones `${...}`. Los valores de est
 
 El controlador no envía los datos llamando directamente a la JSP. Primero los guarda en el objeto `request` mediante `setAttribute`. Como el `forward` mantiene esa misma petición, la JSP puede recuperar los atributos con Expression Language.
 
-`InicioServletRedirect` también llama a `request.setAttribute`, pero después utiliza `sendRedirect`. La respuesta de redirección indica al navegador una URL nueva. Tomcat crea otra petición para `resultado-redirect.jsp`, de modo que `${requestScope.mensaje}` no encuentra el atributo anterior. Como el navegador debe solicitar esa URL, la JSP de destino se coloca fuera de `WEB-INF`.
+`InicioServletRedirect` también llama a `request.setAttribute`, pero después establece el estado `307` y la cabecera `Location`. La respuesta de redirección indica al navegador una URL nueva. Tomcat crea otra petición para `resultado-redirect.jsp`, de modo que `${requestScope.mensaje}` no encuentra el atributo anterior. Como el navegador debe solicitar esa URL, la JSP de destino se coloca fuera de `WEB-INF`.
 
 ## Errores frecuentes
 
 - Intentar abrir directamente la JSP situada en `WEB-INF`.
 - Escribir la ruta del `forward` sin la barra inicial.
-- Esperar que `sendRedirect` conserve los atributos de la petición anterior.
+- Esperar que una redirección conserve los atributos de la petición anterior.
 - Confundir `${curso.nombre}` con el acceso directo a un campo: EL utiliza el getter.
 - Introducir lógica Java mediante scriptlets en la vista.
 - Suponer que Expression Language escapa automáticamente el HTML.
