@@ -31,7 +31,8 @@ Sigue el orden numérico; cada README contiene objetivos, explicación del códi
 | [`11_SpringBoot`](11_SpringBoot/README.md) | Contenedor Spring e inyección de dependencias con Spring Boot. | Consola |
 | [`12_SpringDataJPA`](12_SpringDataJPA/README.md) | Repositorios Spring Data JPA y consultas sobre H2. | Consola |
 | [`13_SpringMVC`](13_SpringMVC/README.md) | Spring MVC con controladores, formularios y vistas Thymeleaf. | Web con servidor integrado |
-| [`14_SpringREST`](14_SpringREST/README.md) | API REST con JSON, métodos HTTP y CRUD de personas sobre Spring Data JPA y H2. | Web con servidor integrado |
+| [`14_JSON`](14_JSON/README.md) | Conversión entre JSON, objetos Java y ficheros con Gson. | Consola |
+| [`15_SpringRest`](15_SpringRest/README.md) | API REST con JSON, métodos HTTP y CRUD de personas sobre Spring Data JPA y H2. | Web con servidor integrado |
 
 ## Abrir y compilar
 
@@ -51,9 +52,9 @@ Sustituye `07_JDBC` por el nombre del módulo que estés estudiando. Para intent
 
 **Módulos web anteriores a Spring Boot:** necesitas Tomcat 11. En IntelliJ Community, una configuración de Smart Tomcat debe apuntar a `src/main/webapp` del módulo elegido como **Deployment Directory** y utilizar ese mismo módulo en **Use classpath of module**. Alternativamente, despliega en Tomcat el WAR generado por Maven. El **Context Path** determina el prefijo de la URL: si usas `/jdbc`, la ruta `/productos` se abre en `http://localhost:8080/jdbc/productos`. Si despliegas un WAR con otro contexto, cambia ese prefijo. Conserva una configuración de Tomcat por módulo para no mezclar directorios ni classpaths. La [guía del primer módulo](01_HolaMundoWeb/README.md) muestra la configuración inicial; cada README indica su ruta de comprobación.
 
-**`13_SpringMVC` y `14_SpringREST`:** son excepciones a las instrucciones de Smart Tomcat anteriores: Boot arranca su propio servidor al ejecutar `Aplicacion.main` o el JAR. Consulta sus README para las rutas y pruebas.
+**`13_SpringMVC` y `15_SpringRest`:** son excepciones a las instrucciones de Smart Tomcat anteriores: Boot arranca su propio servidor al ejecutar `Aplicacion.main` o el JAR. Consulta sus README para las rutas y pruebas.
 
-**Bases de datos:** `07_JDBC`, `08_MVC`, `09_JPA`, `10_JPARelaciones`, `12_SpringDataJPA`, `13_SpringMVC` y `14_SpringREST` incluyen H2 para empezar sin XAMPP. El módulo 12 explica la alternativa MariaDB; los módulos 13 y 14 utilizan H2 y se centran en MVC y REST, respectivamente. No copies contraseñas reales al repositorio. Los datos y la configuración de conexión de un módulo no deben suponerse compartidos por los demás.
+**Bases de datos:** `07_JDBC`, `08_MVC`, `09_JPA`, `10_JPARelaciones`, `12_SpringDataJPA`, `13_SpringMVC` y `15_SpringRest` incluyen H2 para empezar sin XAMPP. El módulo 12 explica la alternativa MariaDB; los módulos 13 y 15 utilizan H2 y se centran en MVC y REST, respectivamente. No copies contraseñas reales al repositorio. Los datos y la configuración de conexión de un módulo no deben suponerse compartidos por los demás.
 
 ## Si algo falla
 

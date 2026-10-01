@@ -24,7 +24,8 @@
         <module>11_SpringBoot</module>
         <module>12_SpringDataJPA</module>
         <module>13_SpringMVC</module>
-        <module>14_SpringREST</module>
+        <module>14_JSON</module>
+        <module>15_SpringRest</module>
     </modules>
 
     <properties>

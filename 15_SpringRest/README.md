@@ -106,7 +106,7 @@ El recorrido recomendado es: consulta primero `/rest/personas`, crea ANA, copia 
 ## Estructura relevante
 
 ```text
-14_SpringREST/
+15_SpringRest/
 ├── pom.xml
 ├── pdf/REST by the Simpsons.pdf
 └── src/main/

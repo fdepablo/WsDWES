@@ -9,7 +9,7 @@
         <relativePath/>
     </parent>
     <groupId>es.dwes</groupId>
-    <artifactId>14_SpringREST</artifactId>
+    <artifactId>15_SpringRest</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
         <java.version>25</java.version>
