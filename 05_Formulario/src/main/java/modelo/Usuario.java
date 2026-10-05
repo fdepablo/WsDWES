@@ -3,30 +3,37 @@ package modelo;
 import java.util.List;
 
 /**
- * Representa los datos no sensibles de un usuario registrado.
+ * Representa los datos de un usuario registrado.
  *
- * <p>La contraseña no forma parte de este objeto porque este ejemplo no
- * implementa todavía almacenamiento seguro de credenciales.</p>
+ * <p>Por simplificación didáctica, conserva la contraseña en texto plano
+ * en memoria. En una aplicación real, la base de datos debe guardar un hash
+ * generado con un algoritmo específico para contraseñas y una sal aleatoria,
+ * nunca la contraseña original. La contraseña no debe mostrarse ni escribirse
+ * en logs.</p>
  */
 public class Usuario {
 
     private final String nombre;
     private final String email;
+    private final String password;
     private final List<String> intereses;
     private final String tipoCuenta;
 
     /**
-     * Reúne los datos aceptados del formulario y copia la lista de intereses.
+     * Reúne los datos recibidos y copia la lista de intereses.
+     * El gestor valida estos datos antes de incorporar el usuario al registro.
      * Por ejemplo, un usuario puede tener nombre "Ana" e interés "programacion".
      *
      * @param nombre nombre mostrado en la confirmación
      * @param email correo usado para detectar registros duplicados
+     * @param password contraseña en texto plano, solo para esta simplificación didáctica
      * @param intereses opciones seleccionadas en el formulario
      * @param tipoCuenta tipo de cuenta seleccionado
      */
-    public Usuario(String nombre, String email, List<String> intereses, String tipoCuenta) {
+    public Usuario(String nombre, String email, String password, List<String> intereses, String tipoCuenta) {
         this.nombre = nombre;
         this.email = email;
+        this.password = password;
         this.intereses = List.copyOf(intereses);
         this.tipoCuenta = tipoCuenta;
     }
@@ -47,6 +54,16 @@ public class Usuario {
      */
     public String getEmail() {
         return email;
+    }
+
+    /**
+     * Permite al gestor validar la contraseña de este ejemplo.
+     * No debe utilizarse para mostrarla en las vistas ni escribirla en logs.
+     *
+     * @return contraseña en texto plano conservada por simplificación didáctica
+     */
+    public String getPassword() {
+        return password;
     }
 
     /**

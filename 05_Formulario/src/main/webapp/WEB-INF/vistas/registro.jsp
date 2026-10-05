@@ -30,7 +30,7 @@
     </c:choose>
 
     <p>Usuarios registrados durante esta ejecución: <c:out value="${totalUsuarios}"/></p>
-    <p><a href="${pageContext.request.contextPath}/registro">Volver al formulario</a></p>
+    <p><a href="${pageContext.request.contextPath}/formulario">Volver al formulario</a></p>
 </main>
 </body>
 </html>

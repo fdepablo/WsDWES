@@ -11,39 +11,27 @@ import servicios.GestorUsuarios;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 /** Procesa y valida el formulario de registro. */
 @WebServlet("/registro")
 public class RegistroServlet extends HttpServlet {
 
-    private static final Pattern FORMATO_EMAIL =
-            Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-    private static final Set<String> INTERESES_PERMITIDOS =
-            Set.of("programacion", "bases-datos", "diseno-web");
-    private static final Set<String> TIPOS_CUENTA_PERMITIDOS =
-            Set.of("estudiante", "docente");
-
+    /**
+     * Conserva los registros entre las peticiones atendidas por este servlet.
+     * Tomcat reutiliza la instancia del servlet: este gestor se crea con ella,
+     * no cada vez que se ejecuta doPost. Si se creara dentro de doPost, cada
+     * petición empezaría con una lista vacía, no detectaría correos anteriores
+     * y contaría solo su propio registro.
+     *
+     * <p>Varios hilos pueden usar este mismo gestor simultáneamente; por eso
+     * sus métodos son synchronized. La referencia final no cambia, pero la
+     * lista del gestor sí puede modificarse: final no garantiza sincronización.
+     * Cada envío crea un Usuario que el gestor valida.</p>
+     */
     private final GestorUsuarios gestorUsuarios = new GestorUsuarios();
 
     /**
-     * Muestra el formulario mediante una vista JSP.
-     * Por ejemplo, GET /registro abre formulario.jsp.
-     *
-     * @param request petición que se pasa a la vista
-     * @param response respuesta que completará la JSP
-     * @throws ServletException si falla el forward a la vista
-     * @throws IOException si falla la respuesta
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        mostrarVista(request, response, "/WEB-INF/vistas/formulario.jsp");
-    }
-
-    /**
-     * Lee los controles del formulario, valida sus valores y registra al usuario.
+     * Lee el formulario y traduce el resultado del gestor a HTTP.
      *
      * <p>La codificación debe establecerse antes de leer cualquier parámetro.
      * {@code getParameterValues} se utiliza para las casillas porque varias
@@ -74,23 +62,45 @@ public class RegistroServlet extends HttpServlet {
                 ? List.of()
                 : Arrays.asList(interesesRecibidos);
 
-        String error = validar(nombre, email, password, intereses, tipoCuenta);
-        if (error != null) {
-            mostrarError(request, response, HttpServletResponse.SC_BAD_REQUEST, error);
-            return;
-        }
-
-        // La contraseña se valida, pero no se registra, almacena ni muestra.
-        Usuario usuario = new Usuario(nombre, email, intereses, tipoCuenta);
-        if (!gestorUsuarios.registrar(usuario)) {
-            mostrarError(request, response, HttpServletResponse.SC_CONFLICT,
-                    "Ya existe un usuario con ese correo electrónico.");
-            return;
+        // No quitamos espacios de la contraseña: forman parte del valor recibido.
+        Usuario usuario = new Usuario(nombre, email, password, intereses, tipoCuenta);
+        int resultado = gestorUsuarios.registrar(usuario);
+        switch (resultado) {
+            case GestorUsuarios.REGISTRO_CORRECTO:
+                break;
+            case GestorUsuarios.ERROR_EMAIL:
+                mostrarError(request, response, HttpServletResponse.SC_BAD_REQUEST,
+                        "Debes indicar un correo electrónico válido.");
+                return;
+            case GestorUsuarios.ERROR_PASSWORD:
+                mostrarError(request, response, HttpServletResponse.SC_BAD_REQUEST,
+                        "La contraseña debe tener entre 8 y 72 caracteres.");
+                return;
+            case GestorUsuarios.ERROR_INTERESES:
+                mostrarError(request, response, HttpServletResponse.SC_BAD_REQUEST,
+                        "Se ha recibido un interés no permitido.");
+                return;
+            case GestorUsuarios.ERROR_TIPO_CUENTA:
+                mostrarError(request, response, HttpServletResponse.SC_BAD_REQUEST,
+                        "Debes seleccionar un tipo de cuenta válido.");
+                return;
+            case GestorUsuarios.ERROR_NOMBRE:
+                mostrarError(request, response, HttpServletResponse.SC_BAD_REQUEST,
+                        "El nombre es obligatorio y no puede superar los 60 caracteres.");
+                return;
+            case GestorUsuarios.EMAIL_DUPLICADO:
+                mostrarError(request, response, HttpServletResponse.SC_CONFLICT,
+                        "Ya existe un usuario con ese correo electrónico.");
+                return;
+            default:
+                mostrarError(request, response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "No se ha podido completar el registro.");
+                return;
         }
 
         request.setAttribute("usuario", usuario);
         request.setAttribute("totalUsuarios", gestorUsuarios.contarUsuarios());
-        mostrarVista(request, response, "/WEB-INF/vistas/confirmacion.jsp");
+        mostrarVista(request, response, "/WEB-INF/vistas/registro.jsp");
     }
 
     /**
@@ -102,38 +112,6 @@ public class RegistroServlet extends HttpServlet {
      */
     private String limpiar(String valor) {
         return valor == null ? "" : valor.strip();
-    }
-
-    /**
-     * Comprueba los campos antes de crear el usuario.
-     * Por ejemplo, un nombre vacío produce un mensaje de error; los datos
-     * válidos producen {@code null}.
-     *
-     * @param nombre nombre ya limpiado
-     * @param email correo ya limpiado
-     * @param password contraseña recibida, que no se almacenará
-     * @param intereses opciones recibidas del formulario
-     * @param tipoCuenta tipo de cuenta ya limpiado
-     * @return primer mensaje de error o {@code null} si todo es válido
-     */
-    private String validar(String nombre, String email, String password,
-                           List<String> intereses, String tipoCuenta) {
-        if (nombre.isBlank() || nombre.length() > 60) {
-            return "El nombre es obligatorio y no puede superar los 60 caracteres.";
-        }
-        if (email.isBlank() || email.length() > 100 || !FORMATO_EMAIL.matcher(email).matches()) {
-            return "Debes indicar un correo electrónico válido.";
-        }
-        if (password == null || password.length() < 8 || password.length() > 72) {
-            return "La contraseña debe tener entre 8 y 72 caracteres.";
-        }
-        if (!INTERESES_PERMITIDOS.containsAll(intereses)) {
-            return "Se ha recibido un interés no permitido.";
-        }
-        if (!TIPOS_CUENTA_PERMITIDOS.contains(tipoCuenta)) {
-            return "Debes seleccionar un tipo de cuenta válido.";
-        }
-        return null;
     }
 
     /**
@@ -156,7 +134,7 @@ public class RegistroServlet extends HttpServlet {
 
     /**
      * Delega la presentación en una JSP conservando la misma petición.
-     * Por ejemplo, la ruta /WEB-INF/vistas/confirmacion.jsp muestra
+     * Por ejemplo, la ruta /WEB-INF/vistas/registro.jsp muestra
      * el atributo "usuario" guardado en la petición.
      *
      * @param request petición con los atributos para la vista

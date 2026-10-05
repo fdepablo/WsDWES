@@ -20,7 +20,6 @@ Este módulo adapta `32_JPA` del antiguo `WorkspaceJava` para introducir JPA de 
 Los requisitos comunes están en el [README raíz](../README.md).
 
 - Tomcat 11 solo para la parte web; la demostración `main` no lo necesita.
-- Haber trabajado el CRUD con JDBC en `07_JDBC` y la separación de responsabilidades en `08_MVC`.
 - Para MariaDB: XAMPP con el servicio **MySQL** iniciado y acceso a phpMyAdmin.
 
 ## JPA en este ejemplo

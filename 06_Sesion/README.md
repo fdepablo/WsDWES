@@ -11,11 +11,7 @@ Este ejemplo adapta `_11_Session` del antiguo workspace para estudiar cómo cons
 - Configurar el tiempo de inactividad y el seguimiento por cookie.
 - Mostrar datos con EL y JSTL.
 
-## Requisitos específicos
-
 Los requisitos comunes están en el [README raíz](../README.md).
-
-- Haber visto servlets, JSP y formularios de los módulos anteriores.
 
 ## Conceptos clave
 

@@ -11,7 +11,7 @@
 <main>
     <h1>No se pudo completar el registro</h1>
     <p><c:out value="${mensajeError}"/></p>
-    <p><a href="${pageContext.request.contextPath}/registro">Volver al formulario</a></p>
+    <p><a href="${pageContext.request.contextPath}/formulario">Volver al formulario</a></p>
 </main>
 </body>
 </html>

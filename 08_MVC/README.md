@@ -15,7 +15,6 @@ Este módulo retoma el CRUD de productos de `07_JDBC` para explicar el patrón *
 
 Los requisitos comunes están en el [README raíz](../README.md).
 
-- Haber trabajado con servlets, JSP, formularios y JDBC en los módulos anteriores.
 - XAMPP solo si se elige la variante MariaDB.
 
 ## La idea de MVC

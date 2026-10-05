@@ -13,11 +13,7 @@ Este módulo muestra cómo recibe un servlet los datos enviados por el navegador
 - Propagar un dato a otra petición mediante un campo oculto.
 - Evitar que un valor introducido por el usuario se interprete como HTML.
 
-## Requisitos específicos
-
 Los requisitos comunes están en el [README raíz](../README.md).
-
-- Haber realizado el primer servlet de `01_HolaMundoWeb`.
 
 ## Recorrido del ejemplo
 

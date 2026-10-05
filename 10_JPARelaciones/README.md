@@ -15,7 +15,6 @@ Este módulo adapta el antiguo `33_JPARelaciones` para aprender a relacionar ent
 
 Los requisitos comunes están en el [README raíz](../README.md).
 
-- Haber trabajado `09_JPA`, especialmente `persist`, `find`, transacciones, JPQL y el ciclo de vida de `EntityManager`.
 - No hace falta Tomcat: este módulo se ejecuta por consola.
 - Para la opción MariaDB: XAMPP con el servicio **MySQL** iniciado y acceso a phpMyAdmin.
 

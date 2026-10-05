@@ -15,11 +15,7 @@ Este módulo introduce JSP como tecnología de vistas y compara dos recorridos: 
 - Proteger las JSP colocándolas dentro de `WEB-INF`.
 - Comprobar por qué un atributo de petición no llega al destino de una redirección.
 
-## Requisitos específicos
-
 Los requisitos comunes están en el [README raíz](../README.md).
-
-- Conocer los fundamentos de servlets explicados en los módulos anteriores.
 
 ## Conceptos clave
 

@@ -22,6 +22,7 @@ dependency-reduced-pom.xml
 .idea/compiler.xml
 .idea/tasks.xml
 .idea/usage.statistics.xml
+.idea/doNotAskNotifications.xml
 .idea/dictionaries
 .idea/shelf
 .idea/caches/

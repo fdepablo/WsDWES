@@ -15,7 +15,6 @@ Este módulo permite crear, consultar, editar y eliminar productos desde una apl
 
 Los requisitos comunes están en el [README raíz](../README.md).
 
-- Conocer los formularios y las JSP de los módulos anteriores.
 - Para la opción MariaDB: XAMPP con el servicio **MySQL** iniciado. XAMPP denomina así al botón del servicio aunque incluya MariaDB.
 
 ## Conceptos clave
