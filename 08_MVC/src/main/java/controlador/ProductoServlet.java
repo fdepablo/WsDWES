@@ -6,13 +6,16 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import modelo.servicio.ProductoServicio;
+import modelo.persistencia.ConexionBDH2;
+import modelo.persistencia.interfaces.ConexionBD;
 import modelo.entidad.Producto;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
 /** Controlador MVC: interpreta la petición, consulta el modelo y selecciona la vista. */
-@WebServlet("/productos/*")
+// Inicializa el servlet al desplegar la aplicación, sin esperar a la primera petición.
+@WebServlet(value = "/productos/*", loadOnStartup = 1)
 public class ProductoServlet extends HttpServlet {
     private ProductoServicio servicio;
 
@@ -24,8 +27,13 @@ public class ProductoServlet extends HttpServlet {
      */
     @Override
     public void init() throws ServletException {
+        // Las rutas relativas de H2, como ./datos, parten de este directorio.
+        System.out.println("08_MVC - Directorio de trabajo: " + System.getProperty("user.dir"));
         try {
-            servicio = new ProductoServicio();
+            // Para usar MariaDB, cambia el objeto por new ConexionBDMariaDB() y su import.
+            ConexionBD baseDatos = new ConexionBDH2();
+            // El servicio recibe la conexión; el controlador no utiliza el DAO ni ejecuta SQL.
+            servicio = new ProductoServicio(baseDatos);
         } catch (SQLException e) {
             throw new ServletException("No se pudo preparar el catálogo de productos.", e);
         }
@@ -50,7 +58,7 @@ public class ProductoServlet extends HttpServlet {
                 mostrar(request, response, "listado.jsp");
             } else if ("/nuevo".equals(ruta)) {
                 request.setAttribute("accion", "nuevo");
-                mostrar(request, response, "formulario.jsp");
+                mostrar(request, response, "alta_editar.jsp");
             } else if ("/editar".equals(ruta)) {
                 Long id = leerId(request, response);
                 if (id == null) return;
@@ -61,9 +69,9 @@ public class ProductoServlet extends HttpServlet {
                 }
                 request.setAttribute("idFormulario", producto.getId());
                 request.setAttribute("nombreFormulario", producto.getNombre());
-                request.setAttribute("precioFormulario", producto.getPrecio().toPlainString());
+                request.setAttribute("precioFormulario", producto.getPrecio());
                 request.setAttribute("accion", "editar");
-                mostrar(request, response, "formulario.jsp");
+                mostrar(request, response, "alta_editar.jsp");
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -138,7 +146,7 @@ public class ProductoServlet extends HttpServlet {
             request.setAttribute("precioFormulario", textoPrecio);
             request.setAttribute("accion", edicion ? "editar" : "nuevo");
             if (edicion) request.setAttribute("idFormulario", id);
-            mostrar(request, response, "formulario.jsp");
+            mostrar(request, response, "alta_editar.jsp");
             return;
         }
         response.sendRedirect(request.getContextPath() + "/productos");

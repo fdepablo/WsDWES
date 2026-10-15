@@ -1,14 +1,15 @@
 package modelo;
 
-import java.math.BigDecimal;
-
 /** Una fila de la tabla productos. */
 public class Producto {
-    private final long id;
-    private final String nombre;
-    private final BigDecimal precio;
+    private long id;
+    private String nombre;
+    private Double precio;
 
-    public Producto(long id, String nombre, BigDecimal precio) {
+    public Producto() {
+    }
+
+    public Producto(long id, String nombre, Double precio) {
         this.id = id;
         this.nombre = nombre;
         this.precio = precio;
@@ -22,7 +23,20 @@ public class Producto {
         return nombre;
     }
 
-    public BigDecimal getPrecio() {
+    public Double getPrecio() {
         return precio;
     }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void setPrecio(Double precio) {
+        this.precio = precio;
+    }
+
 }

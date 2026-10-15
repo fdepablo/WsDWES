@@ -7,7 +7,7 @@ Ejemplos progresivos de **Desarrollo Web en Entorno Servidor (DWES)** para el ci
 - **Java 25** y **Maven 3.9 o compatible** para compilar los módulos.
 - **IntelliJ IDEA** como entorno de referencia. La edición Community permite trabajar con Maven y Java; para ejecutar módulos web puede utilizarse Smart Tomcat.
 - **Apache Tomcat 11** solo para los ejemplos con servlets o JSP. Los ejemplos de consola no lo necesitan.
-- **H2** se incluye como dependencia en los ejemplos de base de datos y funciona sin instalar un servidor. **MariaDB de XAMPP** es una alternativa opcional; cada módulo explica su configuración.
+- **H2** se incluye como dependencia en los ejemplos de base de datos y funciona sin instalar un servidor. **MariaDB de XAMPP** es una alternativa; cada módulo explica su configuración.
 
 Los módulos usan Maven y codificación UTF-8; los ejemplos Jakarta EE emplean `jakarta.*`. `11_SpringBoot` descarga sus dependencias mediante Maven y no requiere instalar Spring por separado.
 
@@ -54,7 +54,7 @@ Sustituye `07_JDBC` por el nombre del módulo que estés estudiando. Para intent
 
 **`13_SpringMVC` y `15_SpringRest`:** son excepciones a las instrucciones de Smart Tomcat anteriores: Boot arranca su propio servidor al ejecutar `Aplicacion.main` o el JAR. Consulta sus README para las rutas y pruebas.
 
-**Bases de datos:** `07_JDBC`, `08_MVC`, `09_JPA`, `10_JPARelaciones`, `12_SpringDataJPA`, `13_SpringMVC` y `15_SpringRest` incluyen H2 para empezar sin XAMPP. El módulo 12 explica la alternativa MariaDB; los módulos 13 y 15 utilizan H2 y se centran en MVC y REST, respectivamente. No copies contraseñas reales al repositorio. Los datos y la configuración de conexión de un módulo no deben suponerse compartidos por los demás.
+**Bases de datos:** `07_JDBC`, `08_MVC`, `09_JPA`, `10_JPARelaciones`, `12_SpringDataJPA`, `13_SpringMVC` y `15_SpringRest` incluyen H2 para trabajar sin XAMPP. En `07_JDBC` y `08_MVC` se elige H2 por defecto y se puede cambiar a MariaDB desde el servlet mediante una interfaz común. El módulo 12 explica la alternativa MariaDB; los módulos 13 y 15 utilizan H2 y se centran en MVC y REST, respectivamente. No copies contraseñas reales al repositorio. Los datos y la configuración de conexión de un módulo no deben suponerse compartidos por los demás.
 
 ## Si algo falla
 

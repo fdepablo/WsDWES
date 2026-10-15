@@ -1,23 +1,25 @@
 package modelo.servicio;
 
 import modelo.entidad.Producto;
-import modelo.persistencia.ConexionBD;
+import modelo.persistencia.interfaces.ConexionBD;
 import modelo.persistencia.ProductoDAO;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
  * Lógica de negocio del catálogo. El controlador llama a este servicio;
- * solo el servicio conoce el DAO y la configuración de la base de datos.
+ * solo el servicio llama al DAO. La conexión se recibe desde el controlador.
  */
 public class ProductoServicio {
     private final ProductoDAO productos;
 
-    /** Prepara la base configurada y crea el DAO que atenderá las operaciones. */
-    public ProductoServicio() throws SQLException {
-        ConexionBD baseDatos = new ConexionBD();
+    /**
+     * Prepara la base y crea el DAO con la implementación elegida en el servlet.
+     * @param baseDatos conexión MariaDB o H2 a través de su interfaz común
+     * @throws SQLException si falla la preparación o la conexión
+     */
+    public ProductoServicio(ConexionBD baseDatos) throws SQLException {
         baseDatos.prepararBaseDatos();
         productos = new ProductoDAO(baseDatos);
     }
@@ -66,18 +68,32 @@ public class ProductoServicio {
      */
     private Producto validar(long id, String nombre, String textoPrecio) {
         String nombreLimpio = nombre == null ? "" : nombre.strip();
-        BigDecimal precio = null;
+        Double precio = null;
         try {
-            if (textoPrecio != null) precio = new BigDecimal(textoPrecio);
+            if (textoPrecio != null) {
+                textoPrecio = textoPrecio.strip();
+                precio = Double.parseDouble(textoPrecio);
+            }
         } catch (NumberFormatException ignored) {
             // La regla común de abajo comunica el error al controlador.
         }
         if (nombreLimpio.isBlank() || nombreLimpio.length() > 80 || precio == null
-                || precio.signum() < 0 || precio.scale() > 2
-                || precio.compareTo(new BigDecimal("99999999.99")) > 0) {
+                || !Double.isFinite(precio) || precio < 0 || precio > 99999999.99
+                || !decimalesValidos(textoPrecio)) {
             throw new IllegalArgumentException(
                     "Indica un nombre de hasta 80 caracteres y un precio entre 0 y 99999999,99 con hasta dos decimales.");
         }
         return new Producto(id, nombreLimpio, precio);
     }
+
+    /** Comprueba los decimales del texto, evitando cálculos de precisión con Double. */
+    private boolean decimalesValidos(String texto) {
+        // El formulario usa notación decimal; no admitimos notación científica ni hexadecimal.
+        if (texto.contains("e") || texto.contains("E") || texto.contains("x") || texto.contains("X")) {
+            return false;
+        }
+        int punto = texto.indexOf('.');
+        return punto == -1 || texto.length() - punto - 1 <= 2;
+    }
+
 }

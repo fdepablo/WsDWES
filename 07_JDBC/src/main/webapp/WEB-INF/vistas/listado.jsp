@@ -2,7 +2,16 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Productos</title></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Productos</title>
+    <style>
+        table { border-collapse: collapse; }
+        th, td { border: 1px solid gray; padding: 8px; }
+        form { display: inline; }
+    </style>
+</head>
 <body>
 <main>
     <h1>Productos</h1>
@@ -21,8 +30,13 @@
                         <td><c:out value="${producto.nombre}" /></td>
                         <td><c:out value="${producto.precio}" /></td>
                         <td>
-                            <a href="${pageContext.request.contextPath}/productos/editar?id=${producto.id}">Editar</a>
-                            <form action="${pageContext.request.contextPath}/productos/eliminar" method="post" style="display:inline">
+                            <%-- GET abre la edición; el navegador añade el ID a la URL como ?id=... --%>
+                            <form action="${pageContext.request.contextPath}/productos/editar" method="get">
+                                <input type="hidden" name="id" value="${producto.id}">
+                                <button type="submit">Editar</button>
+                            </form>
+                            <%-- El borrado modifica datos: se envía por POST, con el ID en el cuerpo. --%>
+                            <form action="${pageContext.request.contextPath}/productos/eliminar" method="post">
                                 <input type="hidden" name="id" value="${producto.id}">
                                 <button type="submit">Eliminar</button>
                             </form>

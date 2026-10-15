@@ -1,8 +1,8 @@
 package modelo.persistencia;
 
 import modelo.entidad.Producto;
+import modelo.persistencia.interfaces.ConexionBD;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,7 +14,7 @@ import java.util.List;
 public class ProductoDAO {
     private final ConexionBD baseDatos;
 
-    /** Recibe la configuración de conexión que utilizará cada operación. */
+    /** Recibe la interfaz común; el mismo DAO sirve para MariaDB y H2. */
     public ProductoDAO(ConexionBD baseDatos) {
         this.baseDatos = baseDatos;
     }
@@ -60,12 +60,12 @@ public class ProductoDAO {
      *
      * @throws SQLException si falla la inserción
      */
-    public void insertar(String nombre, BigDecimal precio) throws SQLException {
+    public void insertar(String nombre, Double precio) throws SQLException {
         String sql = "INSERT INTO productos (nombre, precio) VALUES (?, ?)";
         try (Connection conexion = baseDatos.abrir();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
             sentencia.setString(1, nombre);
-            sentencia.setBigDecimal(2, precio);
+            sentencia.setDouble(2, precio);
             sentencia.executeUpdate();
         }
     }
@@ -76,12 +76,12 @@ public class ProductoDAO {
      * @return true si existía una fila con ese ID
      * @throws SQLException si falla la actualización
      */
-    public boolean actualizar(long id, String nombre, BigDecimal precio) throws SQLException {
+    public boolean actualizar(long id, String nombre, Double precio) throws SQLException {
         String sql = "UPDATE productos SET nombre = ?, precio = ? WHERE id = ?";
         try (Connection conexion = baseDatos.abrir();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
             sentencia.setString(1, nombre);
-            sentencia.setBigDecimal(2, precio);
+            sentencia.setDouble(2, precio);
             sentencia.setLong(3, id);
             return sentencia.executeUpdate() == 1;
         }
@@ -104,6 +104,10 @@ public class ProductoDAO {
 
     /** Lee las columnas de la fila actual del ResultSet. */
     private Producto leerProducto(ResultSet filas) throws SQLException {
-        return new Producto(filas.getLong("id"), filas.getString("nombre"), filas.getBigDecimal("precio"));
+        Producto producto = new Producto();
+        producto.setId(filas.getLong("id"));
+        producto.setNombre(filas.getString("nombre"));
+        producto.setPrecio(filas.getDouble("precio"));
+        return producto;
     }
 }

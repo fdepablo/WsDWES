@@ -60,6 +60,11 @@ dependency-reduced-pom.xml
 # === INSTRUCCIONES LOCALES PARA EL ASISTENTE ===
 /AGENTS.md
 
+# Bases de datos H2 locales y sus archivos auxiliares
+*.mv.db
+*.trace.db
+*.lock.db
+
 # === SISTEMA OPERATIVO ===
 .DS_Store
 Thumbs.db
