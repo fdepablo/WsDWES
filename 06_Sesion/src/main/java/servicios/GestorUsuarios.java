@@ -11,7 +11,9 @@ public class GestorUsuarios {
             new Usuario(2, "marta")
     );
 
-    /** Devuelve el usuario autenticado o null si las credenciales no coinciden. */
+    /** Devuelve el usuario autenticado o null si las credenciales no coinciden.
+     *  Normalmente habría que hacer acceso a bases de datos, es por simplificar
+     * */
     public Usuario autenticar(String nombre, String password) {
         // Solo para esta práctica: una aplicación real usaría contraseñas con hash y almacenamiento seguro.
         if ("felix".equals(nombre) && "1234".equals(password)) {

@@ -15,12 +15,13 @@ public class InicioServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        //Comprobamos que existe la sesión, si no existe NO la creamos
         HttpSession session = request.getSession(false);
+        //Si no existe, mandamos al LoginServlet
         if (session == null || session.getAttribute("usuario") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        response.setHeader("Cache-Control", "no-store");
         request.getRequestDispatcher("/WEB-INF/vistas/inicio.jsp").forward(request, response);
     }
 }
