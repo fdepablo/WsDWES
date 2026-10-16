@@ -15,13 +15,30 @@ public class PersonaServicio implements AutoCloseable {
     /** Cada petición usa su propio EntityManager; la factoría se comparte. */
     public List<Persona> listar() {
         try (EntityManager gestor = factoria.createEntityManager()) {
-            return gestor.createQuery("select p from Persona p order by p.id", Persona.class).getResultList();
+            EntityTransaction transaccion = gestor.getTransaction();
+            try {
+                transaccion.begin();
+                List<Persona> personas = gestor.createQuery(
+                        "select p from Persona p order by p.id", Persona.class).getResultList();
+                transaccion.commit();
+                return personas;
+            } finally {
+                if (transaccion.isActive()) transaccion.rollback();
+            }
         }
     }
 
     public Persona buscar(long id) {
         try (EntityManager gestor = factoria.createEntityManager()) {
-            return gestor.find(Persona.class, id);
+            EntityTransaction transaccion = gestor.getTransaction();
+            try {
+                transaccion.begin();
+                Persona persona = gestor.find(Persona.class, id);
+                transaccion.commit();
+                return persona;
+            } finally {
+                if (transaccion.isActive()) transaccion.rollback();
+            }
         }
     }
 

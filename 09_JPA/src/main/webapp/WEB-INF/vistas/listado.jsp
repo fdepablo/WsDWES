@@ -2,7 +2,16 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Personas con JPA</title></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Personas con JPA</title>
+    <style>
+        table { border-collapse: collapse; }
+        th, td { border: 1px solid gray; padding: 8px; }
+        form { display: inline; }
+    </style>
+</head>
 <body>
 <main>
     <h1>Personas con JPA</h1>
@@ -20,8 +29,13 @@
                         <td><c:out value="${persona.edad}" /></td>
                         <td><c:out value="${persona.peso}" /></td>
                         <td>
-                            <a href="${pageContext.request.contextPath}/personas/editar?id=${persona.id}">Editar</a>
-                            <form action="${pageContext.request.contextPath}/personas/eliminar" method="post" style="display:inline">
+                            <%-- GET abre la edición y envía el ID como parámetro de la URL. --%>
+                            <form action="${pageContext.request.contextPath}/personas/editar" method="get">
+                                <input type="hidden" name="id" value="${persona.id}">
+                                <button type="submit">Editar</button>
+                            </form>
+                            <%-- El borrado modifica datos: se envía por POST. --%>
+                            <form action="${pageContext.request.contextPath}/personas/eliminar" method="post">
                                 <input type="hidden" name="id" value="${persona.id}">
                                 <button type="submit">Eliminar</button>
                             </form>

@@ -5,10 +5,13 @@
 <head><meta charset="UTF-8"><title>Persona</title></head>
 <body>
 <main>
-    <h1><c:choose><c:when test="${requestScope.accion == 'editar'}">Editar persona</c:when><c:otherwise>Nueva persona</c:otherwise></c:choose></h1>
+    <h1>${requestScope.accion == 'editar' ? 'Editar persona' : 'Nueva persona'}</h1>
     <c:if test="${not empty requestScope.error}"><p role="alert"><c:out value="${requestScope.error}" /></p></c:if>
     <form action="${pageContext.request.contextPath}/personas/${requestScope.accion}" method="post">
-        <c:if test="${requestScope.accion == 'editar'}"><input type="hidden" name="id" value="${requestScope.idFormulario}"></c:if>
+        <c:if test="${requestScope.accion == 'editar'}">
+            <%-- Solo la edición necesita enviar el ID de la persona que se actualizará. --%>
+            <input type="hidden" name="id" value="${requestScope.idFormulario}">
+        </c:if>
         <p><label for="nombre">Nombre</label><br>
             <input id="nombre" name="nombre" maxlength="80" required value="<c:out value='${requestScope.nombreFormulario}' />"></p>
         <p><label for="edad">Edad</label><br>

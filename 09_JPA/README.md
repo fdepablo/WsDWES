@@ -1,38 +1,33 @@
 # Primeras operaciones con Jakarta Persistence
 
-Este módulo adapta `32_JPA` del antiguo `WorkspaceJava` para introducir JPA de dos formas: una demostración de consola y un CRUD web. `DemoJpa` permite observar `persist`, `find`, `merge` y `remove` en secuencia; la interfaz web permite probar las mismas ideas desde el navegador. H2 funciona por defecto en un archivo; también se puede usar MariaDB de XAMPP.
+Este ejemplo permite crear, consultar, modificar y eliminar personas usando **JPA**, sin escribir las sentencias SQL del CRUD. Tiene una demostración de consola (`DemoJpa`) y una versión web con servlet, servicio y JSP. H2 funciona por defecto en archivo; MariaDB de XAMPP es una alternativa.
 
-**Orden de trabajo:** primero ejecuta y comprende `main.DemoJpa`, sin Tomcat. Cuando hayas observado las operaciones JPA y el ciclo de vida del `EntityManager`, pasa a la versión web. Esta segunda parte reutiliza lo aprendido y añade peticiones HTTP, un servicio y vistas JSP; no es necesario abordarlas a la vez.
+**Recorrido recomendado:** empieza por `DemoJpa` sin Tomcat y sigue las operaciones básicas. Después prueba la aplicación web.
 
 ## Qué vas a aprender
 
-- Relacionar una clase Java con una tabla mediante `@Entity`, `@Table`, `@Id` y `@GeneratedValue`.
-- Entender para qué sirven la unidad de persistencia, `EntityManagerFactory` y `EntityManager`.
-- Usar `persist`, `find` y `remove` con entidades gestionadas y observar qué devuelve `merge`.
-- Modificar una entidad dentro de una transacción sin escribir `UPDATE` a mano.
-- Consultar varias entidades con JPQL y una consulta tipada.
-- Confirmar o revertir transacciones y cerrar los recursos.
-- Cambiar entre H2 y MariaDB editando `persistence.xml`, sin modificar código Java.
-- Reutilizar la unidad de persistencia desde consola y desde un servlet, separando controlador, servicio y vistas.
+- Relacionar la clase `Persona` con la tabla `personas` mediante anotaciones JPA.
+- Configurar la conexión en `persistence.xml` y reconocer la unidad de persistencia `PersonasJPA`.
+- Utilizar `EntityManager` para crear, buscar, listar, modificar y eliminar personas.
+- Confirmar o deshacer las escrituras mediante transacciones.
+- Cerrar los recursos al terminar.
+- Reutilizar las operaciones JPA desde un servlet y mostrar los datos en JSP.
 
-## Requisitos específicos
+## Conceptos clave para empezar
 
-Los requisitos comunes están en el [README raíz](../README.md).
+### De JDBC a JPA
 
-- Tomcat 11 solo para la parte web; la demostración `main` no lo necesita.
-- Para MariaDB: XAMPP con el servicio **MySQL** iniciado y acceso a phpMyAdmin.
+En JDBC escribíamos SQL y convertíamos cada fila de `ResultSet` en un objeto. Con **JPA**, indicamos cómo se relacionan las clases Java y las tablas y trabajamos con objetos. Esta relación se llama **mapeo objeto-relacional**, u ORM. Un ORM es capaz de crear consultas, crear tablas y convertir filas a objetos de manera transparente.
 
-## JPA en este ejemplo
+**JPA es la especificación; Hibernate es la implementación** que utilizamos. Hibernate genera y ejecuta el SQL: la base de datos relacional sigue existiendo, aunque no escribamos cada `INSERT`, `UPDATE` o `DELETE` a mano.
 
-JPA es la especificación de persistencia; Hibernate es la implementación incluida como dependencia Maven. La clase `Persona` describe los datos y sus anotaciones indican cómo relacionarlos con la tabla `personas`. `persistence.xml` define la unidad `PersonasJPA`, el proveedor y la conexión. Tanto `DemoJpa` como `PersonaServicio` crean una `EntityManagerFactory` al iniciarse y un `EntityManager` para cada operación. La elección de base de datos queda fuera del código Java.
+En este ejemplo, `Persona` tiene **id, nombre, edad y peso**. La clase representa los datos y sus anotaciones indican cómo guardarlos.
 
-### De objetos Java a filas: ORM
+### Anotaciones de Persona
 
-En JDBC escribíamos SQL y convertíamos manualmente cada fila de `ResultSet` en un objeto. JPA propone un **mapeo objeto-relacional** (ORM): describimos qué clase representa una entidad, cómo se identifica y qué propiedades se guardan; el proveedor genera el SQL necesario. Así podemos trabajar con `Persona` y sus atributos en vez de construir a mano cada `INSERT`, `SELECT`, `UPDATE` y `DELETE`. Esto no elimina la base relacional ni sustituye el conocimiento de SQL: conviene comprobar qué tablas y consultas produce Hibernate, especialmente cuando el modelo crezca.
+Una **anotación** en Java es una marca que empieza por `@` y añade información sobre una clase, un campo o un método. El compilador o una librería pueden interpretar esa información. Por ejemplo, ya hemos utilizado `@WebServlet` para indicar la URL de un servlet; ahora Hibernate interpreta las anotaciones de JPA para saber cómo guardar nuestros objetos en la base de datos.
 
-JPA define la API y las reglas; **Hibernate** es el proveedor que las ejecuta en este módulo. Existen otros proveedores de JPA, pero cambiar de proveedor requeriría revisar dependencias y configuración y probar el resultado. **MyBatis no es una implementación de JPA**: es otra herramienta de persistencia con un enfoque diferente. La configuración por anotaciones y valores predeterminados reduce el código, aunque aquí declaramos expresamente los nombres y restricciones que ayudan a aprender el mapeo.
-
-### Anotaciones de `Persona`
+Algunas anotaciones admiten parámetros: en `@Table(name = "personas")`, el parámetro `name` indica el nombre de la tabla.
 
 | Anotación | Qué indica | En este módulo |
 | --- | --- | --- |
@@ -42,46 +37,123 @@ JPA define la API y las reglas; **Hibernate** es el proveedor que las ejecuta en
 | `@GeneratedValue(strategy = IDENTITY)` | La base genera el identificador al insertar. | No asignamos el ID al construir `Persona`. |
 | `@Column(nullable = false, length = 80)` | Ajusta el mapeo y las restricciones de una columna. | `nombre` no admite `NULL` y tiene longitud máxima de 80. |
 
-`edad` y `peso` también se guardan aunque no lleven `@Column`: JPA mapea por defecto los atributos persistentes de la entidad. Como las anotaciones están en los **campos** (`id`, `nombre`), este ejemplo usa acceso por campos. JPA necesita un constructor sin argumentos accesible al proveedor para reconstruir una entidad desde la base; por eso `Persona` tiene uno `protected`. El constructor público facilita crear instancias nuevas en el programa.
 
-La restricción de `@Column` describe el esquema; **no sustituye la validación de los datos recibidos**. En la parte web, `PersonaServicio` comprueba el nombre, la edad y el peso antes de guardar. En la demostración `main` se usan valores fijos conocidos para centrar la atención en JPA.
+`edad` y `peso` se guardan aunque no tengan `@Column`. La entidad necesita un constructor sin argumentos para que JPA pueda crear sus objetos al leer de la base de datos.
 
-El README antiguo citaba otras anotaciones que **no se usan aquí**, pero conviene reconocerlas: `@Transient` excluye una propiedad del mapeo; `@Enumerated` indica cómo guardar un `enum` (por ejemplo, como texto con `EnumType.STRING`); `@Temporal` se empleaba para precisar fecha, hora o ambas al mapear `java.util.Date` o `Calendar`. Si usamos tipos modernos como `LocalDate` o `LocalDateTime`, no necesitamos `@Temporal`. Las anotaciones de relaciones (`@OneToOne`, `@ManyToOne`, etc.) se estudian en `10_JPARelaciones`.
+### Configuración, factoría y gestor
 
-### Unidad de persistencia, factoría y gestor
+| Elemento | Para qué sirve en este ejemplo |
+| --- | --- |
+| `persistence.xml` | Define la entidad, el proveedor y la conexión a la base de datos. Está en `src/main/resources/META-INF`. |
+| `PersonasJPA` | Es el nombre de la unidad de persistencia: identifica la configuración que queremos utilizar. |
+| `EntityManagerFactory` | Crea los `EntityManager`. Se crea una vez al iniciar el programa o servicio y se cierra al finalizar. |
+| `EntityManager` | Es el gestor de entidades: permite realizar las operaciones de persistencia con ellas. En este ejemplo, se abre uno por operación y se cierra al terminar. |
 
-Maven descarga las bibliotecas declaradas en `pom.xml`. El archivo `src/main/resources/META-INF/persistence.xml` define **dónde** persistir: la unidad `PersonasJPA`, la clase `Persona`, Hibernate como proveedor y las propiedades JDBC. El nombre de la unidad debe coincidir exactamente con el usado en `Persistence.createEntityManagerFactory("PersonasJPA")`. Un `persistence.xml` puede definir varias unidades, cada una con su propia configuración; esta práctica solo necesita una. La base de datos MariaDB debe existir antes de ejecutar el ejemplo; Hibernate puede crear la tabla con la configuración de práctica, no el servidor ni necesariamente la base.
+La factoría a partir de la unidad de persistencia, y se crea con el nombre que figura en `persistence.xml`:
 
-`EntityManagerFactory` es la factoría de gestores. Crear una factoría tiene un coste, así que en la consola se crea una vez para todo `main` y se cierra al finalizar; en la web, `PersonaServicio` la conserva durante la vida del servlet. De una misma factoría pueden salir varios `EntityManager`. Cada gestor representa una **unidad de trabajo** con su propio contexto de persistencia y se cierra al terminar. No es simplemente una conexión JDBC mantenida abierta: el proveedor administra las conexiones y el contexto según las operaciones.
+```java
+EntityManagerFactory factoria = Persistence.createEntityManagerFactory("PersonasJPA");
+```
 
-Un `EntityManager` no está pensado para compartirse entre hilos. Por eso `PersonaServicio` abre uno en cada llamada, en lugar de guardarlo como atributo reutilizado por todas las peticiones HTTP. La factoría sí puede compartirse. Tampoco guardamos un `EntityManager` en `HttpSession`: prolongar su vida entre peticiones complicaría las transacciones, el uso concurrente y la liberación de recursos.
+Para realizar una operación, obtenemos un EntityManager:
 
-### Contexto de persistencia: gestionada o separada
+```java
+EntityManager gestor = factoria.createEntityManager();
+```
 
-Cada gestor de entidades mantiene su propio **contexto de persistencia**: las entidades obtenidas con `find` quedan gestionadas mientras ese gestor está abierto. En `actualizar`, se busca una `Persona` gestionada y se cambian sus propiedades; al confirmar la transacción, Hibernate sincroniza esos cambios con la base. No hace falta llamar a `merge` en ese caso.
+Como norma práctica, **compartimos la factoría, pero no un mismo gestor entre peticiones**. En `PersonaServicio` se puede ver cómo cada método abre y cierra el suyo.
 
-El contexto actúa como una caché de primer nivel **propia de ese gestor**: si buscamos dos veces la misma clave dentro del mismo contexto, recibimos la misma instancia gestionada. Eso no significa que todos los gestores compartan los mismos objetos ni que cualquier cambio ya esté confirmado en la base. Mientras la entidad está gestionada, el proveedor detecta los cambios de sus atributos; al sincronizar el contexto puede emitir SQL. Al cerrar el gestor, los objetos que conservamos dejan de estar gestionados. `contains(objeto)` permite comprobarlo mientras el gestor está abierto.
 
-El programa vuelve a buscar a Ana y cierra ese gestor. La instancia devuelta queda **separada** del contexto. Tras cambiar su peso, `fusionar` llama a `merge`: JPA copia sus valores a una instancia gestionada y devuelve esta última. Las dos llamadas a `contains` muestran `false` para el objeto enviado y `true` para el devuelto antes de cerrar el nuevo gestor. Para evitar inserciones inesperadas, se hace `merge` con un ID que acabamos de consultar y sabemos que existe.
+### Fichero `persistence.xml`
 
-Las operaciones que escriben usan `begin` y `commit`. Si se produce una excepción antes de confirmar, el bloque `finally` revierte la transacción que siga activa y cierra el gestor. Las lecturas de este ejemplo no modifican datos y se realizan sin una transacción explícita. `remove` recibe una entidad gestionada, por eso primero se obtiene mediante `find`.
+Este fichero reúne la configuración de JPA y se encuentra en `src/main/resources/META-INF/persistence.xml`. Sus elementos más importantes en este ejemplo son:
 
-La consulta `select p from Persona p order by p.id` es **JPQL**: menciona la clase `Persona` y sus propiedades, no la tabla SQL `personas`. Hibernate genera el SQL correspondiente para H2 o MariaDB. El identificador se asigna al guardar porque `id` usa `GenerationType.IDENTITY`.
+| Elemento | Qué configura |
+| --- | --- |
+| `<persistence-unit name="PersonasJPA">` | Define una unidad de persistencia: una configuración identificada por el nombre que usamos al crear la factoría. |
+| `transaction-type="RESOURCE_LOCAL"` | Indica que controlamos las transacciones desde nuestro código mediante `EntityTransaction`. |
+| `<provider>` | Selecciona Hibernate como implementación de JPA. |
+| `<class>` | Declara la entidad `modelo.entidad.Persona` que vamos a guardar y consultar. |
+| Propiedades `jakarta.persistence.jdbc.*` | Indican el driver, la URL, el usuario y la contraseña para conectarse a la base de datos. Aquí utilizamos H2 en archivo. |
+| `hibernate.hbm2ddl.auto` | Decide cómo se crean o actualizan las tablas a partir de las entidades. |
 
-### Operaciones del `EntityManager`, paso a paso
+#### Creación y actualización de las tablas
 
-1. **`persist` para crear.** `crear` recibe una `Persona` nueva, inicia una transacción y llama a `gestor.persist(persona)`. La instancia pasa a estar gestionada. `commit` confirma la operación; el ID generado se devuelve después. No presupongas que el `INSERT` sucede siempre exactamente en `commit`: con `IDENTITY`, el proveedor puede necesitar insertarla antes para obtener el ID. Por eso distinguimos *hacer gestionada* una entidad de *confirmar* la transacción.
-2. **`find` para buscar.** `buscar` llama a `find(Persona.class, id)`. Devuelve la entidad gestionada dentro de ese gestor o `null` si la clave no existe. Como el método cierra el gestor antes de devolverla, quien recibe el objeto obtiene una entidad **separada**.
-3. **Modificar una entidad gestionada.** `actualizar` abre transacción, busca a Ana y cambia `nombre` y `edad`. No hay una llamada explícita a `UPDATE` ni a `merge`: Hibernate detecta los cambios y los sincroniza al confirmar. La clave primaria identifica a la entidad y no debe modificarse como si fuera un dato editable.
-4. **`merge` para copiar cambios de una entidad separada.** `fusionar` recibe la instancia devuelta por otra búsqueda ya cerrada. `merge` copia su estado a una **instancia gestionada y devuelve esa instancia**. El objeto pasado sigue separado: `contains(separada)` es `false` y `contains(gestionada)` es `true`. Si quisiéramos seguir cambiando valores dentro de la transacción, usaríamos la referencia devuelta, no la enviada. No es un «UPDATE garantizado»: usar `merge` indiscriminadamente con IDs inexistentes o entidades nuevas puede provocar inserciones o errores según el caso y el proveedor. Aquí conocemos el ID porque acabamos de crear y buscar a Ana.
-5. **JPQL para listar.** `listar` usa `createQuery(..., Persona.class)` para obtener una `List<Persona>` con una consulta tipada. `Persona` en JPQL es el nombre de la entidad; `p.id` es una propiedad Java. No escribimos el nombre físico de la tabla ni concatenamos entradas del usuario en la consulta.
-6. **`remove` para borrar.** `borrar` busca primero a Luis **con el mismo gestor** que ejecutará `remove`. Así entrega una entidad gestionada. Pasar a `remove` un objeto separado o recién construido no equivale a borrar la fila con ese ID y puede producir una excepción. Si `find` devuelve `null`, el método indica que no había nada que borrar.
+La propiedad `hibernate.hbm2ddl.auto` de `persistence.xml` indica qué hace Hibernate con el **esquema** (tablas, columnas y restricciones) al crear la factoría:
 
-El README antiguo mencionaba además operaciones que aquí no hacen falta: `contains` comprueba si un objeto está gestionado; `detach(objeto)` separa solo esa entidad y `clear()` vacía el contexto completo; `refresh(objeto)` vuelve a cargar su estado desde la base, descartando cambios locales pendientes. `flush()` sincroniza los cambios con la base **sin confirmar la transacción**: todavía podrían revertirse con `rollback`. Una consulta con nombre (`createNamedQuery`) reutiliza una consulta declarada previamente; para esta primera práctica basta con `createQuery`.
+| Valor | Comportamiento | Cuándo utilizarlo |
+| --- | --- | --- |
+| `none` | No crea, modifica ni valida el esquema. | Cuando las tablas se gestionan por otro medio. |
+| `validate` | Comprueba que el esquema sea compatible con las entidades; si encuentra diferencias incompatibles, falla el arranque. No modifica las tablas. | Para detectar desajustes en un esquema ya creado. |
+| `update` | Crea las tablas que faltan e intenta adaptar las existentes, conservando los datos. No resuelve todos los cambios posibles. | Durante estas prácticas, para mantener los datos entre ejecuciones. |
+| `create` | Elimina y vuelve a crear las tablas mapeadas al arrancar. **Se pierden sus datos anteriores.** | Para pruebas que deban empezar con tablas vacías. |
+| `create-drop` | Hace lo mismo que `create` y elimina las tablas al cerrar la factoría. | Para pruebas con datos temporales. |
+
+Para comenzar con `DemoJpa`, usamos:
+
+```xml
+<property name="hibernate.hbm2ddl.auto" value="create"/>
+```
+
+**`create` resulta útil para repetir la demostración desde cero**: al ejecutar `DemoJpa` se recrean las tablas y después el programa inserta a Ana y Luis. Con `create-drop`, las tablas también desaparecen al finalizar el programa y cerrarse la factoría.
+
+Esta configuración es propia de Hibernate y es distinta de las transacciones del CRUD. En una aplicación real se utilizarían migraciones controladas para evolucionar el esquema. Consulta la [referencia oficial de las acciones de esquema de Hibernate](https://docs.hibernate.org/stable/orm/javadocs/org/hibernate/tool/schema/Action.html).
+
+### Las operaciones básicas
+
+| Operación | Cómo se hace con JPA |
+| --- | --- |
+| Crear | Construir una `Persona` y llamar a `gestor.persist(persona)`. La base genera su ID. |
+| Buscar por ID | `gestor.find(Persona.class, id)`. Devuelve la persona o `null` si no existe. |
+| Listar | Ejecutar una consulta JPQL y obtener una `List<Persona>`. |
+| Modificar | Buscar con `find`, cambiar los campos mediante setters y confirmar la transacción con `commit()`. Como la entidad sigue gestionada por el mismo `EntityManager`, JPA guarda automáticamente los cambios. Si modificamos una entidad cuyo gestor ya se ha cerrado, tendremos que usar `merge()` con un nuevo gestor y confirmar su transacción para guardar esos cambios. |
+| Eliminar | Buscar con `find` y llamar a `gestor.remove(persona)` con ese mismo gestor. |
+
+### Consultar con JPQL
+
+**JPQL (Jakarta Persistence Query Language)** es el lenguaje de consultas de JPA. Su sintaxis se parece a SQL, pero trabaja con entidades y propiedades Java. En este ejemplo Hibernate traduce la consulta a SQL para ejecutarla en la base de datos.
+
+Para listar todas las personas ordenadas por su identificador, utilizamos:
+
+```java
+List<Persona> personas = gestor.createQuery(
+        "select p from Persona p order by p.id", Persona.class).getResultList();
+```
+
+Podemos leer la consulta por partes:
+
+| Parte | Qué significa |
+| --- | --- |
+| `select p` | Devuelve los objetos `Persona` completos, no solo uno de sus campos. |
+| `from Persona p` | Consulta la entidad `Persona` y le asigna el alias `p`, un nombre corto que usamos en el resto de la consulta. |
+| `order by p.id` | Ordena los resultados por la propiedad `id`, de menor a mayor por defecto. |
+
+Usamos **`Persona`, el nombre de la entidad**, en lugar de `personas`, el nombre de la tabla. Del mismo modo, `p.id` se refiere a una propiedad Java.
+
+En la llamada Java, `createQuery(..., Persona.class)` crea una consulta cuyo resultado contiene objetos `Persona`. **`getResultList()` ejecuta la consulta** y devuelve una `List<Persona>`: estará vacía si no hay personas. Podemos recorrerla con un bucle o mostrarla en una JSP.
+
+Para consultar más ejemplos, puedes acudir al [tutorial oficial de JPQL de Jakarta EE](https://jakarta.ee/learn/docs/jakartaee-tutorial/current/persist/persistence-querylanguage/persistence-querylanguage.html). La [especificación de Jakarta Persistence 3.2](https://jakarta.ee/specifications/persistence/3.2/jakarta-persistence-spec-3.2.html) sirve como referencia más completa.
 
 ### Transacciones y cierre de recursos
 
-En este módulo la unidad usa `RESOURCE_LOCAL`: el código controla las transacciones con `getTransaction().begin()`, `commit()` y, si queda una transacción activa al salir por un error, `rollback()`. `commit` confirma los cambios y normalmente sincroniza antes el contexto; `flush` por sí solo no equivale a confirmar. Las lecturas mostradas no abren una transacción explícita. El `finally` cierra el gestor incluso cuando una operación falla; dejarlo abierto retendría recursos. Esta misma regla se aplica al servicio web. `hibernate.hbm2ddl.auto=update` facilita crear o adaptar la tabla durante la práctica, pero no debe confundirse con la gestión de transacciones ni con una solución de migraciones para producción.
+En este ejemplo utilizamos transacciones en todas las operaciones, tanto en las consultas como en las escrituras. Así delimitamos el inicio y el final de cada operación con la base de datos. Una transacción puede agrupar varias operaciones de escritura de forma **atómica**: o se confirman todos sus cambios o no se conserva ninguno.
+
+Para controlar la transacción, obtenemos un objeto `EntityTransaction` a partir del `EntityManager`:
+
+```java
+EntityTransaction transaccion = gestor.getTransaction();
+```
+
+Este objeto permite controlar sus pasos:
+
+1. **`begin()`** inicia la transacción.
+2. Realizamos la operación: consultar, insertar, modificar o eliminar.
+3. **`commit()`** finaliza la transacción y confirma los cambios, si los hay.
+4. Si la operación falla y la transacción sigue activa, **`rollback()`** la deshace.
+
+`try-with-resources` cierra automáticamente el gestor, incluso si ocurre un error; `finally` ejecuta `rollback()` si la transacción sigue activa.
+
+La factoría se mantiene mientras se utiliza el programa o servicio; en `DemoJpa` se cierra con `try-with-resources` y en la aplicación web desde `destroy()` del servlet.
 
 ## Estructura relevante
 
@@ -99,27 +171,70 @@ En este módulo la unidad usa `RESOURCE_LOCAL`: el código controla las transacc
     └── webapp/WEB-INF/vistas/{listado,formulario}.jsp
 ```
 
-## Paso 1. Ejecutar la demostración `main` con H2
+## Paso 1. Ejecutar la demostración de consola
 
-Desde la raíz del workspace:
+En IntelliJ, recarga Maven y ejecuta `main.DemoJpa.main()` usando el módulo `09_JPA`. No necesitas Tomcat. H2 guarda la base en `~/wsdwes_09_jpa.mv.db`, dentro de la carpeta personal del usuario. Aunque el archivo permanece, con `create` las tablas se recrean y sus datos anteriores se pierden en cada ejecución.
 
-```bash
-mvn -pl 09_JPA -am clean package
-```
+Sigue este recorrido:
 
-En IntelliJ, recarga Maven y ejecuta `main.DemoJpa.main()` usando el módulo `09_JPA`. Para este recorrido no configures Tomcat. La configuración incluida en `src/main/resources/META-INF/persistence.xml` usa H2 y guarda la base en `~/wsdwes_09_jpa.mv.db`, dentro de la carpeta personal del usuario. Hibernate crea o adapta la tabla al iniciar; los registros se conservan entre ejecuciones.
+1. `crear` guarda a Ana y Luis y muestra los ID generados.
+2. `buscar` obtiene a Ana por su ID.
+3. `actualizarConFind` cambia su nombre a Ana María y su edad a 26 mediante setters, con el mismo gestor que la busca. El programa vuelve a consultar para mostrar el resultado.
+4. El programa vuelve a buscar a Ana y cierra ese gestor. Cambia el nombre del objeto a Ana López y la edad a 27; `actualizarConMerge` guarda esos cambios con un nuevo gestor. Otra consulta muestra el resultado. Comparamos así la modificación de los mismos campos con ambos enfoques; sus detalles internos se explican en la ampliación final.
+5. `listar` consulta las personas mediante JPQL.
+6. `borrar` elimina a Luis y el último listado permite comprobar el resultado.
 
-El programa crea a Ana y Luis, busca a Ana, la modifica como entidad gestionada, cambia su peso mediante `merge`, lista las personas, borra a Luis y vuelve a listar. Los ID se imprimen porque son generados por la base. Al ejecutar otra vez, aparecen nuevas personas y permanecen las Ana de ejecuciones anteriores; el ejemplo no vacía la base automáticamente.
+**Nota:** con `create`, cada ejecución empieza desde cero y no acumula personas de ejecuciones anteriores.
 
 ## Paso 2. Ejecutar la versión web
 
-Una vez comprendida la demostración de consola, construye el módulo con `mvn -pl 09_JPA -am clean package` y despliega `09_JPA/target/09_JPA-1.0-SNAPSHOT.war` en Tomcat 11, como en los módulos web anteriores. Abre `http://localhost:8080/09_JPA-1.0-SNAPSHOT/personas` (ajusta el contexto si cambias el nombre del WAR). La raíz del contexto incluye un enlace al listado. Puedes crear, editar y eliminar personas; al recargar verás los datos conservados.
+Antes de pasar a la web, cambia manualmente `create` por `update` en `src/main/resources/META-INF/persistence.xml`:
 
-`PersonaServlet` interpreta rutas, parámetros y respuestas HTTP. `PersonaServicio` valida los datos y realiza las operaciones JPA; abre un `EntityManager` por operación y lo cierra después, mientras la factoría se mantiene durante la vida del servlet y se cierra en `destroy`. Las JSP de `WEB-INF/vistas` muestran los datos y escapan el nombre con `<c:out>`. Las escrituras se hacen por POST y terminan en una redirección. La versión web no reproduce `merge`: para editar usa una entidad gestionada, como `actualizar` en la demostración de consola.
+```xml
+<property name="hibernate.hbm2ddl.auto" value="update"/>
+```
 
-Para comparar ambas formas, crea una persona en el navegador, detén Tomcat y ejecuta `DemoJpa`, o viceversa. Ambas usan la misma URL definida en `persistence.xml`, aunque la demostración de consola siempre añade a Ana y Luis. No mantengas Tomcat y la consola abiertos a la vez con la misma base H2 en archivo, porque H2 puede bloquear el acceso concurrente. Tras editar `persistence.xml`, reconstruye y vuelve a desplegar el WAR para que Tomcat lea la nueva configuración.
+De esta manera no perderemos los datos cada vez que arranquemos el Tomcat.
 
-## Cómo usar MariaDB de XAMPP
+Despliega `09_JPA/target/09_JPA-1.0-SNAPSHOT.war` en Tomcat 11 y vamos a `\index.html`.
+
+1. `PersonaServlet` recibe la petición y llama a `PersonaServicio`.
+2. El servicio valida los datos y utiliza JPA para consultar o modificar las personas.
+3. El servlet entrega los datos a las JSP de `WEB-INF/vistas` mediante `forward`.
+4. Tras guardar o eliminar correctamente, redirige al listado para no repetir la escritura al actualizar.
+
+Las JSP muestran los datos con `c:out`. Para editar, el servicio utiliza `find`, setters y una transacción; la web no necesita la demostración adicional de `merge`. La factoría se cierra desde `destroy()` del servlet.
+
+Consola y web utilizan la misma base definida en `persistence.xml`. Para compararlas, detén una antes de ejecutar la otra: H2 en archivo puede bloquear el acceso desde otro proceso. Después de modificar `persistence.xml`, reconstruye y vuelve a desplegar el WAR.
+
+## Cómo comprobar que funciona
+
+1. Ejecuta `DemoJpa`: aparecen dos ID distintos, se consulta y modifica a Ana con ambos enfoques y se elimina a Luis. Al final aparece Ana López, con edad 27 y peso 62.5.
+2. Vuelve a ejecutarlo: aparecen nuevos ID y se conservan los datos anteriores.
+3. En la web, crea una persona, edítala y elimínala comprobando los cambios en el listado.
+4. Actualiza el listado después de guardar: no debe repetirse la inserción.
+5. Reinicia Tomcat y comprueba que las personas que no has eliminado permanecen.
+
+## Errores frecuentes
+
+- Colocar `persistence.xml` fuera de `src/main/resources/META-INF` o usar un nombre distinto de `PersonasJPA` al crear la factoría.
+- Importar `javax.persistence` en lugar de `jakarta.persistence`.
+- Suponer que Tomcat proporciona JPA: Hibernate es una dependencia del módulo y se incluye en el WAR.
+- Olvidar `commit()` o dejar abiertos el gestor y la factoría.
+- Escribir el nombre de la tabla en JPQL: se utiliza la entidad `Persona`.
+- Abrir a la vez la consola y Tomcat con el mismo archivo H2.
+
+### `NoClassDefFoundError: org/jboss/logging/BasicLogger` al ejecutar DemoJpa
+
+Este error indica que falta una librería al ejecutar el programa. Hibernate necesita otras librerías, como JBoss Logging, que Maven incorpora automáticamente: son sus **dependencias transitivas**. Si IntelliJ no ha sincronizado correctamente Maven, puede ejecutar la clase sin incluirlas.
+
+1. Abre la ventana **Maven** de IntelliJ y pulsa **Reload All Maven Projects**.
+2. Espera a que termine la sincronización y comprueba que no haya errores de descarga.
+3. Ejecuta de nuevo `DemoJpa`.
+
+No es necesario añadir JBoss Logging manualmente al `pom.xml`: ya está declarada como dependencia de Hibernate.
+
+## Alternativa con MariaDB de XAMPP
 
 1. Inicia **MySQL** en XAMPP y ejecuta [sql/mariadb.sql](sql/mariadb.sql) en phpMyAdmin. Este script crea la base `dwes_09`; Hibernate creará la tabla `personas` al ejecutar el programa.
 2. En `src/main/resources/META-INF/persistence.xml`, sustituye las cuatro propiedades JDBC de H2 por estas, cambiando usuario, contraseña y puerto según tu instalación:
@@ -135,31 +250,43 @@ Para comparar ambas formas, crea una persona en el navegador, detén Tomcat y ej
 
 Para volver a H2, restaura en `persistence.xml` las propiedades originales: driver `org.h2.Driver`, URL `jdbc:h2:file:~/wsdwes_09_jpa`, usuario `sa` y contraseña vacía. Cada motor conserva su propia base. Si prefieres otro archivo H2, cambia únicamente el valor de la URL, por ejemplo a `jdbc:h2:file:C:/datos/dwes_09`.
 
-## Cómo comprobar que funciona
-
-- La primera ejecución con una base vacía imprime dos ID distintos, muestra a Ana tras `find`, indica que la actualización y el borrado se realizaron y termina con Ana María y peso `63.0` en el listado. Antes de `commit`, `contains` muestra `false` para la instancia enviada a `merge` y `true` para la devuelta.
-- La segunda ejecución genera nuevos ID y conserva la Ana María anterior, porque la base H2 está en archivo.
-- En MariaDB, phpMyAdmin muestra la tabla `personas` con columnas `id`, `nombre`, `edad` y `peso`.
-- Si se cambia la URL por una base MariaDB inexistente o se detiene el servicio, el arranque falla: JPA necesita una conexión disponible.
-
-## Explicación guiada y diferencias con el original
-
-El ejemplo antiguo usaba `javax.persistence`, JPA 2.1, Hibernate 5, MySQL y metadatos de Eclipse. Aquí se utilizan `jakarta.persistence`, el esquema XML 3.2, Hibernate 7, Maven e IntelliJ. La configuración antigua `drop-and-create` borraba las tablas y los datos en cada arranque; este módulo usa `hibernate.hbm2ddl.auto=update` para conservarlos durante la práctica. Ese ajuste facilita el aprendizaje, pero no sustituye a las migraciones controladas de esquema en una aplicación real.
-
-El original tenía una clase `main` por operación y extensos comentarios junto a cada llamada. `DemoJpa` reúne esas operaciones en un recorrido que usa los ID recién generados, sin suponer que exista el ID 1. También compara una actualización de entidad gestionada con `merge` sobre una entidad separada. El README explica el contexto de persistencia, las transacciones, JPQL y el motivo por el que `remove` requiere una entidad gestionada.
-
-## Errores frecuentes
-
-- Colocar `persistence.xml` fuera de `src/main/resources/META-INF` o escribir otro nombre de unidad de persistencia.
-- Importar `javax.persistence` en lugar de `jakarta.persistence`.
-- Creer que Tomcat proporciona JPA: en este módulo la dependencia Hibernate se añade explícitamente y se incluye en el WAR.
-- Olvidar `commit` o cerrar el `EntityManager` y la factoría.
-- Usar `remove` con una entidad recién construida que no está gestionada.
-- Escribir `personas` en JPQL como si fuera SQL; la consulta usa el nombre de la clase `Persona`.
-- Esperar una base MariaDB creada automáticamente: el script prepara la base antes de que Hibernate cree la tabla.
-
 ## Propuestas para practicar
 
 1. Añade una búsqueda por nombre con un parámetro JPQL y prueba un nombre existente e inexistente.
-2. Añade un campo `correo` a `Persona` y comprueba cómo se refleja en H2 tras ejecutar el ejemplo.
-3. Cambia el peso de Ana dentro de `actualizar` y compara ese recorrido con `fusionar`. Indica qué instancias están gestionadas en cada momento.
+2. Añade un campo `correo` a `Persona` y comprueba cómo se refleja en la tabla tras ejecutar el ejemplo.
+
+## Ampliación opcional sobre el funcionamiento interno
+
+**Esta parte no es necesaria para realizar el CRUD ni para seguir la primera explicación de clase.** Puede utilizarse más adelante para estudiar la demostración de `merge` y entender con más detalle cómo trabaja JPA.
+
+### Contexto de persistencia y caché de primer nivel
+
+
+Cada gestor de entidades mantiene su propio **contexto de persistencia**: las entidades obtenidas con `find` quedan gestionadas mientras ese gestor está abierto. En `actualizarConFind`, se busca una `Persona` gestionada y se cambian sus propiedades; al confirmar la transacción, Hibernate sincroniza esos cambios con la base. No hace falta llamar a `merge` en ese caso.
+
+El contexto actúa como una caché de primer nivel **propia de ese gestor**: si buscamos dos veces la misma clave dentro del mismo contexto, recibimos la misma instancia gestionada. Eso no significa que todos los gestores compartan los mismos objetos ni que cualquier cambio ya esté confirmado en la base. Mientras la entidad está gestionada, el proveedor detecta los cambios de sus atributos; al sincronizar el contexto puede emitir SQL. Al cerrar el gestor, los objetos que conservamos dejan de estar gestionados. `contains(objeto)` permite comprobarlo mientras el gestor está abierto.
+
+El programa vuelve a buscar a Ana y cierra ese gestor. La instancia devuelta queda **separada** del contexto. Tras cambiar su nombre y edad, `actualizarConMerge` llama a `merge`: JPA copia sus valores a una instancia gestionada y devuelve esta última. Las dos llamadas a `contains` muestran `false` para el objeto enviado y `true` para el devuelto antes de cerrar el nuevo gestor. Para evitar inserciones inesperadas, se hace `merge` con un ID que acabamos de consultar y sabemos que existe.
+
+Todas las operaciones usan `begin` y `commit`, incluidas las lecturas. `remove` recibe una entidad gestionada, por eso primero se obtiene mediante `find`.
+
+La consulta `select p from Persona p order by p.id` es **JPQL**: menciona la clase `Persona` y sus propiedades, no la tabla SQL `personas`. Hibernate genera el SQL correspondiente para H2 o MariaDB. El identificador se asigna al guardar porque `id` usa `GenerationType.IDENTITY`.
+
+### Detalles de las operaciones y merge
+
+
+1. **`persist` para crear.** `crear` recibe una `Persona` nueva, inicia una transacción y llama a `gestor.persist(persona)`. La instancia pasa a estar gestionada. `commit` confirma la operación; el ID generado se devuelve después. No presupongas que el `INSERT` sucede siempre exactamente en `commit`: con `IDENTITY`, el proveedor puede necesitar insertarla antes para obtener el ID. Por eso distinguimos *hacer gestionada* una entidad de *confirmar* la transacción.
+2. **`find` para buscar.** `buscar` llama a `find(Persona.class, id)`. Devuelve la entidad gestionada dentro de ese gestor o `null` si la clave no existe. Como el método cierra el gestor antes de devolverla, quien recibe el objeto obtiene una entidad **separada**.
+3. **Modificar una entidad gestionada.** `actualizarConFind` abre transacción, busca a Ana y cambia `nombre` y `edad`. No hay una llamada explícita a `UPDATE` ni a `merge`: Hibernate detecta los cambios y los sincroniza al confirmar. La clave primaria identifica a la entidad y no debe modificarse como si fuera un dato editable.
+4. **`merge` para copiar cambios de una entidad separada.** `actualizarConMerge` recibe la instancia devuelta por otra búsqueda ya cerrada. `merge` copia su estado a una **instancia gestionada y devuelve esa instancia**. El objeto pasado sigue separado: `contains(separada)` es `false` y `contains(gestionada)` es `true`. Si quisiéramos seguir cambiando valores dentro de la transacción, usaríamos la referencia devuelta, no la enviada. No es un «UPDATE garantizado»: usar `merge` indiscriminadamente con IDs inexistentes o entidades nuevas puede provocar inserciones o errores según el caso y el proveedor. Aquí conocemos el ID porque acabamos de crear y buscar a Ana.
+5. **JPQL para listar.** `listar` usa `createQuery(..., Persona.class)` para obtener una `List<Persona>` con una consulta tipada. `Persona` en JPQL es el nombre de la entidad; `p.id` es una propiedad Java. No escribimos el nombre físico de la tabla ni concatenamos entradas del usuario en la consulta.
+6. **`remove` para borrar.** `borrar` busca primero a Luis **con el mismo gestor** que ejecutará `remove`. Así entrega una entidad gestionada. Pasar a `remove` un objeto separado o recién construido no equivale a borrar la fila con ese ID y puede producir una excepción. Si `find` devuelve `null`, el método indica que no había nada que borrar.
+
+### Otras anotaciones para consultar más adelante
+
+Otras anotaciones que no se utilizan en este módulo: 
+
+- `@Transient` excluye una propiedad del mapeo.
+- `@Enumerated` indica cómo guardar un `enum` (por ejemplo, como texto con `EnumType.STRING`).
+- `@Temporal` se empleaba para precisar fecha, hora o ambas al mapear `java.util.Date` o `Calendar`. Si usamos tipos modernos como `LocalDate` o `LocalDateTime`, no necesitamos `@Temporal`. 
+- Las anotaciones de relaciones (`@OneToOne`, `@ManyToOne`, etc.) se estudian en `10_JPARelaciones`.

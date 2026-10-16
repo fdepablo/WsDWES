@@ -21,7 +21,7 @@ public class Persona {
     private int edad;
     private double peso;
 
-    protected Persona() {
+    public Persona() {
         // JPA necesita un constructor sin argumentos para reconstruir la entidad.
     }
 
