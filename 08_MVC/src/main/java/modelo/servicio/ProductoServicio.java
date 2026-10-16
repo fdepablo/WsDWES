@@ -92,8 +92,21 @@ public class ProductoServicio {
         if (texto.contains("e") || texto.contains("E") || texto.contains("x") || texto.contains("X")) {
             return false;
         }
+
         int punto = texto.indexOf('.');
-        return punto == -1 || texto.length() - punto - 1 <= 2;
+        // Si no hay punto, el número no tiene parte decimal.
+        if (punto == -1) {
+            return true;
+        }
+
+        // Contamos los caracteres que quedan después del punto.
+        int inicioDecimales = punto + 1;
+        int cantidadDecimales = texto.length() - inicioDecimales;
+        // No admitimos más de 2 decimales
+        if (cantidadDecimales > 2) {
+            return false;
+        }
+        return true;
     }
 
 }

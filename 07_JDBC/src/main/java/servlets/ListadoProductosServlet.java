@@ -12,7 +12,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 /** Consulta todos los productos y muestra la tabla. */
-// Inicializa el servlet al desplegar la aplicación, sin esperar a la primera petición.
+// loadOnStartup = 1, Inicializa el servlet al desplegar la aplicación, sin esperar a la primera petición.
+// Los Servlets por definición (al igual que los JSP), tienen carga perezosa o "lazy", por lo que el objeto
+// no se inicializa hasta que sea invocado a su URL por primera vez. Con este parámetro indicamos que la
+// carga va a ser ansiosa o "eagle".
+// El "1" indica que la posición de inicialización en caso de que haya varios Servlets con este parámetro.
 @WebServlet(value = {"/productos", "/productos/"}, loadOnStartup = 1)
 public class ListadoProductosServlet extends HttpServlet {
     private ProductoDAO productos;

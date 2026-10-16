@@ -7,7 +7,6 @@ Este módulo retoma el CRUD de productos de `07_JDBC` para explicar el patrón *
 - Identificar modelo, vista y controlador en una aplicación web pequeña.
 - Distinguir la lógica de negocio de `ProductoServicio` del acceso SQL de `ProductoDAO`.
 - Seguir el recorrido desde un enlace o formulario hasta la respuesta HTML.
-- Distinguir datos de la petición (`request.setAttribute`) y datos persistidos en la base.
 - Comprender por qué el controlador decide la vista y la JSP no ejecuta SQL.
 - Comparar `forward` para mostrar una vista con `sendRedirect` después de modificar datos.
 
@@ -19,30 +18,89 @@ Los requisitos comunes están en el [README raíz](../README.md).
 
 ## La idea de MVC
 
+La idea fundamental de MVC es la **separación de responsabilidades**: el modelo gestiona los datos y las reglas de negocio, la vista presenta la información y el controlador coordina las peticiones. Cada parte tiene una tarea definida y se comunica con las demás mediante métodos y datos acordados, sin necesitar conocer sus detalles internos.
+
+Esta separación facilita que el código sea **mantenible**: permite localizar errores y modificar una parte reduciendo el impacto sobre las demás. También favorece el trabajo en equipo, porque distintos programadores pueden encargarse de partes diferentes. Para colaborar, deben acordar cómo se comunican —qué métodos ofrecen, qué datos reciben y qué devuelven—, sin necesitar conocer todos los detalles de su implementación interna.
+
+Vamos con las diferentes partes del **MVC**:
+
 | Parte | Archivos del módulo | Responsabilidad |
 |---|---|---|
 | Modelo | `modelo/entidad/Producto.java`, `modelo/servicio/ProductoServicio.java` y `modelo/persistencia/`, con `ProductoDAO`, las dos conexiones y su interfaz | Representar productos, aplicar reglas y leer o modificar los datos. No genera HTML ni decide qué página mostrar. |
 | Vista | `WEB-INF/vistas/listado.jsp` y `alta_editar.jsp` | Presentar los atributos que le entrega el controlador. No abre conexiones JDBC. |
 | Controlador | `controlador/ProductoServlet.java` | Interpretar la ruta y los parámetros HTTP, llamar al servicio y elegir la vista, la redirección o el estado HTTP. No conoce el DAO. |
 
-`index.html` es la página pública de entrada. No forma parte del recorrido del CRUD una vez que se abre `/productos`.
+**Nota:** `index.html` es la página pública de entrada. No forma parte del recorrido del CRUD y tiene un enlace a `/productos`.
 
-Dentro del modelo hay tres funciones: `Producto` representa una entidad; `ProductoServicio` aplica la regla de nombre obligatorio y precio válido y coordina las operaciones; `ProductoDAO` ejecuta SQL mediante `ConexionBD`. El servicio es el único que llama al DAO. Al inicializarse, el servlet elige la implementación de conexión y se la entrega al servicio; no llama al DAO ni ejecuta SQL.
+El modelo se organiza en tres partes:
 
-Por ejemplo, al solicitar `GET /productos`, `ProductoServlet` llama a `ProductoServicio.listar()`. El servicio consulta `ProductoDAO`, y el servlet coloca el resultado en el atributo de petición `productos` y hace `forward` a `listado.jsp`. La JSP la recorre con `<c:forEach>` y genera la tabla. Al enviar `POST /productos/nuevo`, el controlador pasa los textos recibidos a `ProductoServicio.crear()`. El servicio valida, llama a `ProductoDAO.insertar()` y el controlador redirige a `GET /productos`. La redirección evita repetir el `INSERT` al recargar.
+| Parte del modelo | Responsabilidad general | Qué no debe hacer |
+| --- | --- | --- |
+| **Entidad** | Representa los datos de un elemento del dominio, como un producto, una persona o un pedido. Sus objetos permiten intercambiar esos datos entre las capas. | No recibe peticiones HTTP ni ejecuta SQL. |
+| **Servicio** | Aplica las reglas de negocio, valida los datos y coordina las operaciones. Llama al DAO cuando necesita consultar o guardar información. | No elige JSP ni decide estados HTTP. De eso se encarga el Controlador|
+| **DAO** (*Data Access Object*) | Se encarga del acceso a datos: consulta, inserta, actualiza y elimina registros. En JDBC, ejecuta SQL y transforma las filas en entidades. | No decide las reglas de negocio ni genera HTML. |
 
-```text
-Navegador ── petición ──► ProductoServlet ──► ProductoServicio ──► ProductoDAO ──► Base de datos
-                              │
-                              ├── GET: atributo de petición + forward ──► JSP ──► HTML
-                              └── POST correcto: redirect ──► nueva petición GET
+Dentro de este ejemplo, en el modelo podemos encontrar: 
+- `Producto` representa una entidad.
+- `ProductoServicio` aplica la regla de nombre obligatorio y precio válido y coordina las operaciones. 
+- `ProductoDAO` ejecuta SQL mediante `ConexionBD`. El servicio es el único que llama al DAO. Al inicializarse, el servlet elige la implementación de conexión y se la entrega al servicio; no llama al DAO ni ejecuta SQL.
+
+Por ejemplo, al solicitar `GET /productos`, `ProductoServlet` llama a `ProductoServicio.listar()`. Este servicio consulta `ProductoDAO`, y con lo que le responda `ProductoServicio`, el servlet coloca el resultado en el atributo de petición `productos` y hace `forward` a `listado.jsp`. La JSP la recorre con `<c:forEach>` y genera la tabla.
+
+Mención especial sería al enviar `POST /productos/nuevo`, el controlador pasa los textos recibidos a `ProductoServicio.crear()`. El servicio valida, llama a `ProductoDAO.insertar()` y el controlador hace una **redirección** a `GET /productos`, ya que la redirección evita repetir el `INSERT` al recargar la página web con `F5` (patrón **POST/Redirect/GET**).
+
+```mermaid
+flowchart TB
+    navegador["Navegador<br/>Envía una petición HTTP"]
+    controlador["CONTROLADOR<br/>ProductoServlet"]
+    vista["VISTA<br/>listado.jsp o alta_editar.jsp"]
+    respuesta["HTML que recibe el navegador"]
+
+    subgraph modelo["MODELO"]
+        servicio["ProductoServicio<br/>Valida los datos"]
+        dao["ProductoDAO<br/>Ejecuta SQL"]
+        servicio -->|3. Operación| dao
+        dao -.->|6. Objetos o resultado| servicio
+    end
+
+    bd[("Base de datos<br/>H2 o MariaDB")]
+    navegador -->|1. Petición HTTP| controlador
+    controlador -->|2. Llamada| servicio
+    dao -->|4. SQL| bd
+    bd -.->|5. Filas o resultado| dao
+    servicio -.->|7. Datos o error| controlador
+    controlador -->|8. Elige JSP| vista
+    vista -->|9. Genera HTML| respuesta
 ```
 
-El controlador no construye la tabla HTML ni comprueba las reglas de nombre y precio; esas reglas pertenecen al servicio. Sí convierte el parámetro `id` y decide si responde con `400`, `404` o una vista, porque son decisiones HTTP. La vista no ejecuta SQL. MVC describe esas responsabilidades, no exige un framework concreto.
+Las flechas continuas muestran las llamadas y el envío a la vista; las discontinuas muestran las respuestas. Sigue los números para recorrer una consulta completa:
+
+1. El **navegador** envía una petición, por ejemplo `GET /productos`.
+2. El **controlador** llama al modelo, por ejemplo `ProductoServicio.listar()`.
+3. El **servicio** llama al DAO, por ejemplo `ProductoDAO.listar()`.
+4. El **DAO** ejecuta el `SELECT` mediante JDBC.
+5. La **base de datos** devuelve las filas, que el DAO lee con `ResultSet`.
+6. El **DAO** transforma esas filas en objetos `Producto` y devuelve la lista al servicio.
+7. El **servicio** devuelve los datos al controlador. Tanto si hay un error o no, el controlador decide la respuesta HTTP correspondiente.
+8. El **controlador elige la vista**, por ejemplo `listado.jsp`, que además guarda la lista como atributo de request y hace `forward`.
+9. La **JSP** genera el HTML que recibe el navegador.
+
+El **modelo no es solo `Producto`**: también incluye el servicio y el acceso a datos. `Producto` es la entidad que representa los datos intercambiados por esas clases. La JSP recibe los datos del controlador; no llama al servicio ni al DAO.
+
+Después de un POST correcto, el controlador hace `redirect` al listado en lugar de mostrar directamente la JSP. El navegador realiza un nuevo GET y vuelve a seguir el recorrido del dibujo.
+
+El controlador no construye la tabla HTML ni comprueba las reglas de nombre y precio; esas reglas pertenecen al servicio. Sí convierte el parámetro `id` y decide si responde con `400`, `404` o una vista, porque son decisiones HTTP. 
+
+MVC describe todas estas responsabilidades sin trabajar con ninguna tecnología (como Java, C, etc.) o framework concreto (como Spring).
 
 ## Conceptos clave del código
 
-`PreparedStatement` asigna los valores del formulario a los parámetros `?` de las sentencias SQL. `try-with-resources` cierra conexión, sentencia y resultado. El precio usa `Double` para simplificar el ejemplo; el DAO utiliza `setDouble()` y `getDouble()`, mientras la columna sigue siendo `DECIMAL(10,2)`. En una aplicación real con importes monetarios se recomienda `BigDecimal` por la precisión decimal. El servicio comprueba el rango, rechaza valores no finitos y limita los decimales del texto recibido. Las JSP están bajo `WEB-INF`, por lo que solo se muestran a través del servlet. `<c:out>` escapa los valores mostrados; `<c:choose>`, `<c:when>`, `<c:otherwise>`, `<c:if>` y `<c:forEach>` expresan decisiones y recorridos sin scriptlets. Estas etiquetas se explican con más detalle en el [README de 07_JDBC](../07_JDBC/README.md).
+- `PreparedStatement` asigna los valores del formulario a los parámetros `?` de las sentencias SQL. 
+- `try-with-resources` cierra conexión, sentencia y resultado. 
+- El precio es un `Double`. El DAO utiliza `setDouble()` y `getDouble()`, mientras la columna sigue siendo `DECIMAL(10,2)`. 
+- El servicio comprueba el rango, rechaza valores no finitos y limita los decimales del texto recibido. 
+- Las JSP están bajo `WEB-INF`, por lo que solo se muestran a través del servlet. 
+- `<c:out>` escapa los valores mostrados; `<c:choose>`, `<c:when>`, `<c:otherwise>`, `<c:if>` y `<c:forEach>` expresan decisiones y recorridos sin scriptlets. Estas etiquetas se explican con más detalle en el [README de 07_JDBC](../07_JDBC/README.md).
 
 ## Estructura relevante
 
@@ -66,7 +124,7 @@ El controlador no construye la tabla HTML ni comprueba las reglas de nombre y pr
 
 ## Elegir la conexión mediante una interfaz
 
-`modelo.persistencia.interfaces.ConexionBD` define `abrir()` y `prepararBaseDatos()`. `ConexionBDMariaDB` y `ConexionBDH2`, en `modelo.persistencia`, implementan ese contrato. Se conserva esta ubicación dentro del modelo para mantener la estructura MVC del módulo.
+La **interfaz** `modelo.persistencia.interfaces.ConexionBD` define `abrir()` y `prepararBaseDatos()`. Por otro lado, las clases `ConexionBDMariaDB` y `ConexionBDH2`, implementan dicha interfaz. 
 
 En `ProductoServlet.init()` se selecciona el motor de forma manual:
 
@@ -75,11 +133,9 @@ ConexionBD baseDatos = new ConexionBDH2();
 servicio = new ProductoServicio(baseDatos);
 ```
 
-`ProductoServicio` recibe la interfaz, prepara la base y construye `ProductoDAO` con esa misma implementación. El DAO obtiene una conexión nueva mediante `abrir()` para cada operación y la cierra con `try-with-resources`. No cambia el SQL al cambiar de motor.
+`ProductoServicio` recibe la interfaz, prepara la base y construye `ProductoDAO` con la implementación elegida. El DAO obtiene una conexión nueva mediante `abrir()` para cada operación y la cierra con `try-with-resources`. No cambia el SQL al cambiar de implementación.
 
-La elección de la conexión se realiza una vez, al iniciar el servlet. Esto no altera el recorrido MVC: durante las peticiones, el controlador llama al servicio, y el servicio al DAO. El controlador no utiliza la conexión para consultar ni modificar productos.
-
-Cada implementación carga explícitamente su controlador JDBC con `Class.forName(...)`, para que pueda registrarse en `DriverManager` al desplegar en Tomcat. Maven incluye los JAR en `WEB-INF/lib` del WAR; no hay que copiarlos a mano.
+La elección de la conexión se realiza una vez, al iniciar el servlet, y gracias a la implementación por capas, no altera el recorrido MVC: durante las peticiones, el controlador llama al servicio, y el servicio al DAO. El controlador no utiliza la conexión para consultar ni modificar productos.
 
 ## Arrancar con H2 y localizar sus datos
 
@@ -90,11 +146,9 @@ ConexionBD baseDatos = new ConexionBDH2();
 servicio = new ProductoServicio(baseDatos);
 ```
 
-Compila y despliega de nuevo. No necesitas cambiar el servicio, el DAO ni las JSP. H2 crea la tabla si no existe y utiliza la URL `jdbc:h2:file:./datos/wsdwes_08_mvc`. El archivo será `datos/wsdwes_08_mvc.mv.db`, relativo al **directorio de trabajo de Tomcat**, no necesariamente a la ubicación del WAR. H2 crea la carpeta `datos` si no existe; necesita permisos de escritura. En IntelliJ, la ubicación depende de la configuración de ejecución.
+H2 crea la tabla si no existe y utiliza la URL `jdbc:h2:file:./datos/wsdwes_08_mvc`. El archivo será `datos/wsdwes_08_mvc.mv.db`, relativo al **directorio de trabajo de Tomcat**, no necesariamente a la ubicación del WAR. H2 crea la carpeta `datos` si no existe; necesita permisos de escritura. En IntelliJ, la ubicación depende de la configuración de ejecución.
 
 Al desplegar, `ProductoServlet.init()` imprime en la consola de Tomcat `08_MVC - Directorio de trabajo:`, seguido del resultado de `System.getProperty("user.dir")`. La carpeta `datos` se crea respecto a ese directorio. La anotación `loadOnStartup = 1` hace que el servlet se inicialice al desplegar la aplicación, sin esperar a la primera petición.
-
-El archivo queda fuera del WAR. Si ya tenías una base en tu carpeta personal, cambiar la URL no la mueve ni copia sus datos. Para elegir MariaDB, sigue el apartado de la alternativa y vuelve a compilar y desplegar. Cada motor mantiene sus propios datos.
 
 ## Alternativa con MariaDB de XAMPP
 
@@ -104,8 +158,6 @@ Para elegir MariaDB, cambia en `ProductoServlet` el import a `modelo.persistenci
 2. Ejecuta [sql/mariadb.sql](sql/mariadb.sql) en phpMyAdmin. Crea la base `dwes_08` y la tabla `productos`.
 3. Revisa los valores locales de demostración de `ConexionBDMariaDB`: URL `jdbc:mariadb://localhost:3306/dwes_08`, usuario `root` y contraseña vacía. Adáptalos a tu instalación sin publicar credenciales reales.
 4. Compila, despliega y abre `http://localhost:8080/mvc/productos`.
-
-Al seleccionar MariaDB, el servicio comprueba su conexión al inicializarse, pero no crea la base ni las tablas. Este módulo ya no utiliza las variables `JDBC_URL`, `JDBC_USER` ni `JDBC_PASSWORD`; los valores se encuentran en las clases de conexión como simplificación didáctica. En una aplicación real se configurarían fuera del código.
 
 ## Cómo comprobar que funciona
 
@@ -120,7 +172,16 @@ Compila desde la raíz con `mvn -f 08_MVC/pom.xml clean package`. En IntelliJ, c
 
 ## Explicación guiada
 
-Empieza por el enlace del listado en `index.html`. Sigue `doGet`: la ruta determina si se presenta el listado o el formulario. Busca la llamada a `servicio.listar()`, después `ProductoDAO.listar()`, y vuelve al `setAttribute("productos", ...)` del servlet. Localiza `${requestScope.productos}` en `listado.jsp`: es el mismo dato durante el `forward`. Después sigue un alta: `doPost` entrega los parámetros a `ProductoServicio.crear()`, el servicio valida, el DAO ejecuta `INSERT` y el servlet hace `sendRedirect` para provocar un nuevo `GET`. Si el servicio rechaza los datos, el servlet muestra el formulario con `forward` para conservar lo escrito.
+1. Abre `index.html` y pulsa el enlace al listado: el navegador envía un `GET /productos`.
+2. Sigue `doGet` en `ProductoServlet`, que devuelve el listado de productos.
+3. Para mostrar el listado, localiza la llamada a `servicio.listar()` y sigue su recorrido hasta `ProductoDAO.listar()`, que consulta la base y devuelve los productos.
+4. Vuelve al servlet: guarda la lista con `request.setAttribute("productos", ...)` y hace `forward` a `listado.jsp`.
+5. Localiza `${requestScope.productos}` en la JSP: accede a la lista de esa misma petición. `c:forEach` recorre los productos para generar la tabla.
+6. Pulsa Añadir producto: el `GET /productos/nuevo` muestra `alta_editar.jsp` con los campos vacíos.
+7. Rellena el formulario y pulsa Guardar: `doPost` recibe los parámetros y los entrega a `ProductoServicio.crear()` mediante el método `guardar()` del controlador.
+8. Sigue la validación del servicio: si los datos son válidos, llama al DAO, que ejecuta el `INSERT`.
+9. Vuelve al servlet: utiliza `sendRedirect` para provocar un nuevo `GET /productos`. El listado muestra el alta y actualizar la página no repite la inserción.
+10. Repite el envío con datos inválidos que lleguen al servidor: el servicio los rechaza y el controlador muestra el formulario con `forward`, conservando lo escrito y el mensaje de error.
 
 ## Errores frecuentes
 
@@ -128,14 +189,10 @@ Empieza por el enlace del listado en `index.html`. Sigue `doGet`: la ruta determ
 - Hacer que el servlet llame directamente al DAO y repetir allí las reglas de nombre y precio.
 - Poner SQL o validación de negocio en una JSP.
 - Creer que `forward` y `sendRedirect` conservan los mismos atributos de petición.
-- Seleccionar `07_JDBC` en **Use classpath of module** al arrancar este módulo.
 - Si eliges MariaDB, olvidar arrancar su servicio o ejecutar el script antes de iniciar la aplicación.
-- Cambiar el motor sin actualizar su import o sin recompilar y desplegar.
-- Intentar elegir la conexión mediante variables `JDBC_*`: ahora se selecciona en `ProductoServlet`.
-- Suponer que este ejemplo tiene control de acceso: antes de publicarlo harían falta autorización y protección CSRF para las operaciones de escritura.
 
 ## Propuestas para practicar
 
 1. Dibuja el recorrido de `POST /productos/editar` e indica dónde interviene cada parte de MVC.
 2. Añade el campo `stock` y señala qué archivos de cada parte tienes que modificar, incluida su validación en `ProductoServicio`.
-3. Crea una vista de detalle: el controlador debe llamar a `ProductoServicio.buscar(id)`, no al DAO ni a SQL.
+3. Crea una vista de detalle donde se muestre el `stock`: el controlador debe llamar a `ProductoServicio.buscar(id)`, no al DAO ni a SQL.
