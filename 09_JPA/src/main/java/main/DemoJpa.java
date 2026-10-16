@@ -11,7 +11,7 @@ import java.util.List;
 /** Ejecuta las operaciones básicas de JPA en el mismo orden que el ejemplo antiguo. */
 public class DemoJpa {
     public static void main(String[] args) {
-        EntityManagerFactory factoria = Persistence.createEntityManagerFactory("PersonasPU");
+        EntityManagerFactory factoria = Persistence.createEntityManagerFactory("PersonasJPA");
         try {
             Long idAna = crear(factoria, new Persona("Ana", 25, 62.5));
             Long idLuis = crear(factoria, new Persona("Luis", 31, 78.0));

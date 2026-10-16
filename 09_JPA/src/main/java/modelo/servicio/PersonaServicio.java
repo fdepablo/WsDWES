@@ -10,7 +10,7 @@ import java.util.List;
 
 /** Reúne las operaciones JPA que necesita la interfaz web. */
 public class PersonaServicio implements AutoCloseable {
-    private final EntityManagerFactory factoria = Persistence.createEntityManagerFactory("PersonasPU");
+    private final EntityManagerFactory factoria = Persistence.createEntityManagerFactory("PersonasJPA");
 
     /** Cada petición usa su propio EntityManager; la factoría se comparte. */
     public List<Persona> listar() {

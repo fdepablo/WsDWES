@@ -24,7 +24,7 @@ Los requisitos comunes están en el [README raíz](../README.md).
 
 ## JPA en este ejemplo
 
-JPA es la especificación de persistencia; Hibernate es la implementación incluida como dependencia Maven. La clase `Persona` describe los datos y sus anotaciones indican cómo relacionarlos con la tabla `personas`. `persistence.xml` define la unidad `PersonasPU`, el proveedor y la conexión. Tanto `DemoJpa` como `PersonaServicio` crean una `EntityManagerFactory` al iniciarse y un `EntityManager` para cada operación. La elección de base de datos queda fuera del código Java.
+JPA es la especificación de persistencia; Hibernate es la implementación incluida como dependencia Maven. La clase `Persona` describe los datos y sus anotaciones indican cómo relacionarlos con la tabla `personas`. `persistence.xml` define la unidad `PersonasJPA`, el proveedor y la conexión. Tanto `DemoJpa` como `PersonaServicio` crean una `EntityManagerFactory` al iniciarse y un `EntityManager` para cada operación. La elección de base de datos queda fuera del código Java.
 
 ### De objetos Java a filas: ORM
 
@@ -50,7 +50,7 @@ El README antiguo citaba otras anotaciones que **no se usan aquí**, pero convie
 
 ### Unidad de persistencia, factoría y gestor
 
-Maven descarga las bibliotecas declaradas en `pom.xml`. El archivo `src/main/resources/META-INF/persistence.xml` define **dónde** persistir: la unidad `PersonasPU`, la clase `Persona`, Hibernate como proveedor y las propiedades JDBC. El nombre de la unidad debe coincidir exactamente con el usado en `Persistence.createEntityManagerFactory("PersonasPU")`. Un `persistence.xml` puede definir varias unidades, cada una con su propia configuración; esta práctica solo necesita una. La base de datos MariaDB debe existir antes de ejecutar el ejemplo; Hibernate puede crear la tabla con la configuración de práctica, no el servidor ni necesariamente la base.
+Maven descarga las bibliotecas declaradas en `pom.xml`. El archivo `src/main/resources/META-INF/persistence.xml` define **dónde** persistir: la unidad `PersonasJPA`, la clase `Persona`, Hibernate como proveedor y las propiedades JDBC. El nombre de la unidad debe coincidir exactamente con el usado en `Persistence.createEntityManagerFactory("PersonasJPA")`. Un `persistence.xml` puede definir varias unidades, cada una con su propia configuración; esta práctica solo necesita una. La base de datos MariaDB debe existir antes de ejecutar el ejemplo; Hibernate puede crear la tabla con la configuración de práctica, no el servidor ni necesariamente la base.
 
 `EntityManagerFactory` es la factoría de gestores. Crear una factoría tiene un coste, así que en la consola se crea una vez para todo `main` y se cierra al finalizar; en la web, `PersonaServicio` la conserva durante la vida del servlet. De una misma factoría pueden salir varios `EntityManager`. Cada gestor representa una **unidad de trabajo** con su propio contexto de persistencia y se cierra al terminar. No es simplemente una conexión JDBC mantenida abierta: el proveedor administra las conexiones y el contexto según las operaciones.
 
