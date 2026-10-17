@@ -23,6 +23,20 @@ En JDBC escribíamos SQL y convertíamos cada fila de `ResultSet` en un objeto. 
 
 En este ejemplo, `Persona` tiene **id, nombre, edad y peso**. La clase representa los datos y sus anotaciones indican cómo guardarlos.
 
+### Equivalencia entre objetos y base de datos
+
+Para comprender el mapeo, podemos partir de estas equivalencias entre la programación orientada a objetos (POO) y una base de datos relacional:
+
+| En Java | Equivalencia | En la base de datos | Ejemplo |
+| --- | --- | --- | --- |
+| Clase de entidad | ↔ | Tabla | `Persona` ↔ `personas`. |
+| Atributo persistente | ↔ | Campo o columna | `nombre` ↔ columna `nombre`. |
+| Objeto de la entidad | ↔ | Registro o fila | Una persona guardada ↔ una fila de `personas`. |
+
+La conversión funciona **en ambos sentidos**: al guardar, JPA traslada los datos del objeto a una fila; al consultar, obtiene los datos de las filas y los representa mediante objetos Java.
+
+Estas equivalencias se refieren normalmente a **entidades**, es decir, las clases cuyos objetos queremos guardar en la base de datos. No se aplican a todas las clases del programa, como los servlets o los servicios.
+
 ### Anotaciones de Persona
 
 Una **anotación** en Java es una marca que empieza por `@` y añade información sobre una clase, un campo o un método. El compilador o una librería pueden interpretar esa información. Por ejemplo, ya hemos utilizado `@WebServlet` para indicar la URL de un servlet; ahora Hibernate interpreta las anotaciones de JPA para saber cómo guardar nuestros objetos en la base de datos.
@@ -151,7 +165,28 @@ Este objeto permite controlar sus pasos:
 3. **`commit()`** finaliza la transacción y confirma los cambios, si los hay.
 4. Si la operación falla y la transacción sigue activa, **`rollback()`** la deshace.
 
-`try-with-resources` cierra automáticamente el gestor, incluso si ocurre un error; `finally` ejecuta `rollback()` si la transacción sigue activa.
+Cuando gestionamos las transacciones desde nuestro código, debemos asegurarnos de que terminan con `commit()` o `rollback()`. **Cerrar el gestor no sustituye el control de la transacción.** Por eso utilizamos este patrón:
+
+```java
+try (EntityManager gestor = factoria.createEntityManager()) {
+    EntityTransaction transaccion = gestor.getTransaction();
+    try {
+        transaccion.begin();
+        gestor.persist(new Persona("Ana", 25, 62.5));
+        transaccion.commit();
+    } finally {
+        if (transaccion.isActive()) {
+            transaccion.rollback();
+        }
+    }
+}
+```
+
+1. Si todo va bien, `commit()` confirma los cambios y termina la transacción. Después se ejecuta `finally`, pero `isActive()` devuelve `false` y no se hace ningún rollback.
+2. Si ocurre un error antes de confirmar y la transacción sigue activa, `finally` ejecuta `rollback()` para deshacer los cambios pendientes. Comprobamos `isActive()` porque llamar a `rollback()` sin una transacción activa provoca una excepción.
+3. Después, `try-with-resources` cierra automáticamente el `EntityManager`, también cuando ocurre un error. Como no capturamos la excepción, esta continúa hacia el método que llamó a la operación.
+
+**JPA no exige utilizar exactamente un bloque `finally`**: también podríamos controlar el rollback en un `catch`. Lo importante es finalizar la transacción y cerrar el gestor. Aquí elegimos `finally` para comprobar siempre si queda una transacción activa antes de cerrarlo. La [documentación de Hibernate sobre manejo de excepciones](https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#exception-handling) explica la necesidad de revertir y cerrar el gestor ante un error de persistencia; la [API de `EntityTransaction`](https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/jakarta/persistence/entitytransaction) detalla `isActive()` y `rollback()`.
 
 La factoría se mantiene mientras se utiliza el programa o servicio; en `DemoJpa` se cierra con `try-with-resources` y en la aplicación web desde `destroy()` del servlet.
 

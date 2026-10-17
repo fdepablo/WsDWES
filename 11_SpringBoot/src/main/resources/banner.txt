@@ -1,4 +1,4 @@
 ========================================
         11_SpringBoot - DWES
-        Catalogo de peliculas
+        Catalogo de Películas
 ========================================
