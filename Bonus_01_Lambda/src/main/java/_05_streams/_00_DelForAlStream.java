@@ -49,8 +49,9 @@ public class _00_DelForAlStream {
         List<Integer> aprobadasConStream = notas.stream()
             .filter(nota -> nota >= 5)
             .collect(Collectors.toList());
+        //JS - let mayores = edades.filter(edad => edad >= 18);
         System.out.println("Con filter: " + aprobadasConStream);
-        // Ambas listas contienen: [7, 9, 5]. Aqui no hemos usado forEach.
+        // Ambas listas contienen: [7, 9, 5].
 
         // PASO 3: unir lo aprendido para mostrar SOLO las aprobadas.
         System.out.println("\n=== 3. Combinar filter y forEach ===");

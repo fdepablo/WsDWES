@@ -1,6 +1,7 @@
 package _04_lambdas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.function.BiFunction;
 
 import javax.swing.JButton;
 
@@ -30,6 +31,10 @@ interface InterfazGenerica <T>{
 	public T operacion(T a, T b);
 }
 
+interface InterfazGenericaBifunction <T, R, S>{
+	public T apply(R a, S b);
+}
+
 
 public class _01_Lambdas {
 	
@@ -41,6 +46,13 @@ public class _01_Lambdas {
 			@Override
 			public Integer operacion(Integer a, Integer b) {
 				return a+b;
+			}
+		};
+
+		InterfazDosParametros idumResta = new InterfazDosParametros() {
+			@Override
+			public Integer operacion(Integer a, Integer b) {
+				return a-b;
 			}
 		};
 	
@@ -109,9 +121,12 @@ public class _01_Lambdas {
 			System.out.println("La variable i vale " + i);
 			System.out.println("La variable s vale " + s);
 		};
-		
+
+		//Crear lambda a partir de una interfaz que usa Generics
 		InterfazGenerica<Double> iGenerica = ( n1, n2 ) -> n1 + n2;//sumamos
 		InterfazGenerica<String> iGenericaCadena = ( n1, n2 ) -> n1 + n2;//concatenamos
+		InterfazGenerica<Long> iGenericaLong = (n1, n2) -> n1 - n2;
+		iGenericaLong.operacion(5L,6L);//-1
 				
 		System.out.println("=============================================");
 		System.out.println(i1.operacion(300, 600));
@@ -133,7 +148,10 @@ public class _01_Lambdas {
 		//de otras funciones cuyo parámetro de entrada sea de la misma interfaz
 		metodo1(( n1, n2 ) -> n1 + n2);
 		metodo1(i1);
-		
+
+		BiFunction<Double,Double,Double> suma = (n1, n2) -> n1 + n2;
+		suma.apply(3.0,4.0);
+		//InterfazDosParametros i1bis = ( n1, n2 ) -> n1 + n2;
 	}	
 	
 	public static void metodo1(InterfazDosParametros isp) {

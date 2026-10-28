@@ -6,6 +6,7 @@ import java.io.IOException;
 
 public class _00_Lambdas {
 
+
     public static void main(String[] args) {
         //Antes de Java 8 podiamos hacer funcionalidad parecida a las funciones
         //lambda mediante clases anonimas
@@ -44,5 +45,17 @@ public class _00_Lambdas {
 
         imprimibleFicheroLambda.imprimir("Ahora imprimo con lambda");
         imprimiblePantallaLambda.imprimir("Ahora imprimo con lambda");
+
+        var numero = 45;//El tipo de la variable se define cuando se le asigna un valor
+                        //En este caso será de tipo int
+        System.out.println(numero);
+        //numero = 45.67; No puedo, es de tipo int
+
+        //Nota, esto solo vale para variables, no vale para atributos de clase
+        //Nota 2, tampoco vale para funciones lambda
+
+        _00_Imprimible imprimirPantallaError = (cadena) -> System.err.println(cadena);
+        imprimirPantallaError.imprimir("Esto es un error");
+        imprimibleFicheroLambda.imprimir("ESto se imprimer por fichero");
     }
 }

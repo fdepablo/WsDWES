@@ -16,19 +16,30 @@ public class _02_Lambdas {
 		Supplier<Integer> sup;
 		//La primera funcion lambda sería que siempre genere un 2, por ejemplo
 		sup = () -> 2;
+
+		/*
+		sup = new Supplier<Integer>() {
+			@Override
+			public Integer get() {
+				return 2;
+			}
+		};*/
+
 		Integer numero = sup.get();
 		System.out.println(numero);
 		
 		//Podemos asignar todas las funciones que se nos ocurran
 		sup = () -> 3 + 4;
-		System.out.println(sup.get());
+		System.out.println(sup.get());//7
 		
 		//Generar un numero aleatorio
+		System.out.println("Numero alatorios:");
 		sup = () -> {
 			Random rd = new Random();
 			int i = rd.nextInt(21);//aleatorio entre el 0 y el 20
 			return i;
 		};
+
 		System.out.println(sup.get());
 		System.out.println(sup.get());
 		System.out.println(sup.get());
@@ -52,7 +63,7 @@ public class _02_Lambdas {
 		con.accept(78);
 		
 		Consumer<Persona> conPersona;
-		//El siguiente ejemplo tambien valdr�a con (p) o con (Persona p)
+		//El siguiente ejemplo tambien valdrá con (p) o con (Persona p)
 		conPersona = p -> {
 			System.out.println("imprimiendo: " + p.getId());
 			System.out.println("imprimiendo: " +p.getNombre());
@@ -63,6 +74,7 @@ public class _02_Lambdas {
 		Function<String, Integer> func;
 		//Notese que no ponemos ni los parentesis, ni el tipo, ni el return
 		func = s -> Integer.parseInt(s);
+
 		Integer numero2 = func.apply("50");
 		Integer numero3 = func.apply("100");
 		System.out.println(numero3 + numero2);
