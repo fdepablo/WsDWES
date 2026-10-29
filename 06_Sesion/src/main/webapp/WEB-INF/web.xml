@@ -4,7 +4,7 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
          version="6.1">
     <session-config>
-        <session-timeout>15</session-timeout>
+        <session-timeout>5</session-timeout>
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 </web-app>

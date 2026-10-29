@@ -19,7 +19,8 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Consultamos la sesión sin crear otra solo por abrir el formulario.
+        // Consultamos la sesión. Si no existe la sessión, le mandamos a login para que ponga
+        // su usuario y su password y se valida.
         HttpSession session = request.getSession(false);
         // Si ya ha iniciado sesión, lo mandamos al inicio sin pedirle los datos otra vez.
         if (session != null && session.getAttribute("usuario") != null) {
@@ -45,11 +46,16 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        // Ahora sí obtenemos o creamos la sesión, porque el usuario se ha autenticado.
+        // Ahora sí creamos la sesión, porque el usuario se ha autenticado.
         HttpSession session = request.getSession();
-        request.changeSessionId(); // Renueva el identificador tras iniciar sesión.
+        request.changeSessionId(); // Renueva el identificador tras iniciar sesión. Esto se hace por seguridad
+
         // Guardamos el usuario en sesión para reconocerlo en las siguientes peticiones.
         session.setAttribute("usuario", usuario);
+        System.out.println(usuario.getNombre());
+        System.out.println(session.getAttribute("usuario"));
+        System.out.println(((Usuario)session.getAttribute("usuario")).getNombre());
+        session.setAttribute("prueba", 5);
         // El redirect provoca un GET a /inicio: actualizar la página (F5) no vuelve a enviar el login.
         response.sendRedirect(request.getContextPath() + "/inicio");
     }
