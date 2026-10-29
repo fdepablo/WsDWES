@@ -10,7 +10,7 @@
     <p role="alert"><c:out value="${requestScope.error}" /></p>
 </c:if>
 
-<form action="${pageContext.request.contextPath}/login" method="POST">
+<form action="${pageContext.request.contextPath}/LoginServlet" method="POST">
     <label>Nombre <input name="nombre" required></label>
     <label>Contraseña <input type="password" name="password" required></label>
     <button type="submit">Entrar</button>

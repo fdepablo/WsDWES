@@ -24,9 +24,9 @@
     </tbody>
 </table>
 
-<p><a href="${pageContext.request.contextPath}/inicio">Volver</a></p>
+<p><a href="${pageContext.request.contextPath}/PaginaPrincipalServlet">Volver</a></p>
 
-<form action="${pageContext.request.contextPath}/logout" method="post">
+<form action="${pageContext.request.contextPath}/LogoutServlet" method="post">
     <button type="submit">Cerrar sesión</button>
 </form>
 

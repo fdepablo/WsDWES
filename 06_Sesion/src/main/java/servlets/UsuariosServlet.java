@@ -11,8 +11,8 @@ import servicios.GestorUsuarios;
 import java.io.IOException;
 
 /** Protege el listado y lo entrega a la vista como atributo de petición. */
-@WebServlet("/usuarios")
-public class ListadoUsuariosServlet extends HttpServlet {
+@WebServlet("/UsuariosServlet")
+public class UsuariosServlet extends HttpServlet {
     private final GestorUsuarios gestor = new GestorUsuarios();
 
     @Override
@@ -22,7 +22,7 @@ public class ListadoUsuariosServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         // Sin un usuario autenticado, mandamos al login y no mostramos el listado.
         if (session == null || session.getAttribute("usuario") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+            response.sendRedirect(request.getContextPath() + "/LoginServlet");
             return;
         }
 

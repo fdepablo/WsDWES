@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 /** Invalida la sesión actual sin crear otra. */
-@WebServlet("/logout")
+@WebServlet("/LogoutServlet")
 public class LogoutServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -20,6 +20,6 @@ public class LogoutServlet extends HttpServlet {
             session.invalidate();
         }
         // Volvemos al formulario con una nueva petición GET.
-        response.sendRedirect(request.getContextPath() + "/login");
+        response.sendRedirect(request.getContextPath() + "/LoginServlet");
     }
 }

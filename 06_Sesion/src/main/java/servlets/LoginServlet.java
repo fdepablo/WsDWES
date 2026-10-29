@@ -11,8 +11,8 @@ import servicios.GestorUsuarios;
 
 import java.io.IOException;
 
-/** Crea la sesión únicamente cuando las credenciales son correctas. */
-@WebServlet("/login")
+/** Autentica al usuario y renueva el identificador de su sesión antes de guardar sus datos. */
+@WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
     private final GestorUsuarios gestor = new GestorUsuarios();
 
@@ -24,7 +24,7 @@ public class LoginServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         // Si ya ha iniciado sesión, lo mandamos al inicio sin pedirle los datos otra vez.
         if (session != null && session.getAttribute("usuario") != null) {
-            response.sendRedirect(request.getContextPath() + "/inicio");
+            response.sendRedirect(request.getContextPath() + "/PaginaPrincipalServlet");
             return;
         }
         // El forward muestra la JSP dentro de esta misma petición.
@@ -46,17 +46,14 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        // Ahora sí creamos la sesión, porque el usuario se ha autenticado.
+        // Recuperamos la sesión creada por la JSP de entrada o creamos una si no existe.
         HttpSession session = request.getSession();
         request.changeSessionId(); // Renueva el identificador tras iniciar sesión. Esto se hace por seguridad
 
         // Guardamos el usuario en sesión para reconocerlo en las siguientes peticiones.
         session.setAttribute("usuario", usuario);
-        System.out.println(usuario.getNombre());
-        System.out.println(session.getAttribute("usuario"));
-        System.out.println(((Usuario)session.getAttribute("usuario")).getNombre());
-        session.setAttribute("prueba", 5);
-        // El redirect provoca un GET a /inicio: actualizar la página (F5) no vuelve a enviar el login.
-        response.sendRedirect(request.getContextPath() + "/inicio");
+
+        // El redirect provoca un GET a /PaginaPrincipalServlet: actualizar la página (F5) no vuelve a enviar el login.
+        response.sendRedirect(request.getContextPath() + "/PaginaPrincipalServlet");
     }
 }
