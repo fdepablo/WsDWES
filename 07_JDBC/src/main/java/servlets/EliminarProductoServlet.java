@@ -1,6 +1,5 @@
 package servlets;
 
-import bbdd.ConexionBDH2;
 import bbdd.ConexionBDMySQL;
 import bbdd.ProductoDAO;
 import bbdd.interfaces.ConexionBD;
@@ -17,14 +16,14 @@ import java.sql.SQLException;
 public class EliminarProductoServlet extends HttpServlet {
     // La base ya se ha preparado al pasar primero por el listado.
     private final ConexionBD baseDatos = new ConexionBDMySQL();
-    private final ProductoDAO productos = new ProductoDAO(baseDatos);
+    private final ProductoDAO productoDAO = new ProductoDAO(baseDatos);
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         long id = Long.parseLong(request.getParameter("id"));
         try {
-            if (!productos.eliminar(id)) {
+            if (!productoDAO.eliminar(id)) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "El producto no existe.");
                 return;
             }

@@ -1,6 +1,5 @@
 package servlets;
 
-import bbdd.ConexionBDH2;
 import bbdd.ConexionBDMySQL;
 import bbdd.ProductoDAO;
 import bbdd.interfaces.ConexionBD;
@@ -18,7 +17,7 @@ import modelo.Producto;
 public class EditarProductoServlet extends HttpServlet {
     // La base ya se ha preparado al pasar primero por el listado.
     private final ConexionBD baseDatos = new ConexionBDMySQL();
-    private final ProductoDAO productos = new ProductoDAO(baseDatos);
+    private final ProductoDAO productoDAO = new ProductoDAO(baseDatos);
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -26,7 +25,7 @@ public class EditarProductoServlet extends HttpServlet {
         // El GET recibe el ID enviado por el botón Editar; todavía no modifica nada.
         long id = Long.parseLong(request.getParameter("id"));
         try {
-            Producto producto = productos.buscar(id);
+            Producto producto = productoDAO.buscar(id);
             if (producto == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "El producto no existe.");
                 return;
@@ -51,7 +50,7 @@ public class EditarProductoServlet extends HttpServlet {
         Double precio = Double.parseDouble(request.getParameter("precio"));
         try {
             // Cero filas afectadas significa que el producto ya no existe.
-            if (!productos.actualizar(id, nombre, precio)) {
+            if (!productoDAO.actualizar(id, nombre, precio)) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "El producto no existe.");
                 return;
             }

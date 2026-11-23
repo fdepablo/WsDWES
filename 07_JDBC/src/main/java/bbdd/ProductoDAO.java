@@ -20,25 +20,6 @@ public class ProductoDAO {
     }
 
     /**
-     * Recorre el ResultSet y convierte cada fila en un Producto.
-     *
-     * @return productos ordenados por ID; lista vacía si no hay filas
-     * @throws SQLException si falla la consulta
-     */
-    public List<Producto> listar() throws SQLException {
-        List<Producto> productos = new ArrayList<>();
-        String sql = "SELECT id, nombre, precio FROM productos ORDER BY id";
-        try (Connection conexion = baseDatos.abrir();
-             PreparedStatement sentencia = conexion.prepareStatement(sql);
-             ResultSet filas = sentencia.executeQuery()) {
-            while (filas.next()) {
-                productos.add(leerProducto(filas));
-            }
-        }
-        return productos;
-    }
-
-    /**
      * Usa un parámetro SQL para buscar por ID sin concatenar datos en la consulta.
      *
      * @return producto encontrado o null si no existe
@@ -49,7 +30,12 @@ public class ProductoDAO {
         try (Connection conexion = baseDatos.abrir();
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
             sentencia.setLong(1, id);
+            //Con executeQuery() ejecutamos la sql compilada anteriormente
+            //ResulSet es una tabla en memoria con todas las filas resultantes
+            //de la query
             try (ResultSet filas = sentencia.executeQuery()) {
+                //el metodo .next() nos devuelve si existe una fila siguiente
+                //en el resultSet
                 return filas.next() ? leerProducto(filas) : null;
             }
         }
@@ -83,6 +69,8 @@ public class ProductoDAO {
             sentencia.setString(1, nombre);
             sentencia.setDouble(2, precio);
             sentencia.setLong(3, id);
+            //executeUpdate() nos devuelve el numero de filas creadas
+            //en este caso tiene que se 1 ya que modificamos por ID
             return sentencia.executeUpdate() == 1;
         }
     }
@@ -109,5 +97,24 @@ public class ProductoDAO {
         producto.setNombre(filas.getString("nombre"));
         producto.setPrecio(filas.getDouble("precio"));
         return producto;
+    }
+
+    /**
+     * Recorre el ResultSet y convierte cada fila en un Producto.
+     *
+     * @return productos ordenados por ID; lista vacía si no hay filas
+     * @throws SQLException si falla la consulta
+     */
+    public List<Producto> listar() throws SQLException {
+        List<Producto> productos = new ArrayList<>();
+        String sql = "SELECT id, nombre, precio FROM productos ORDER BY id";
+        try (Connection conexion = baseDatos.abrir();
+             PreparedStatement sentencia = conexion.prepareStatement(sql);
+             ResultSet filas = sentencia.executeQuery()) {
+            while (filas.next()) {
+                productos.add(leerProducto(filas));
+            }
+        }
+        return productos;
     }
 }

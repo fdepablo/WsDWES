@@ -1,6 +1,7 @@
 package servlets;
 
 import bbdd.ConexionBDH2;
+import bbdd.ConexionBDMySQL;
 import bbdd.ProductoDAO;
 import bbdd.interfaces.ConexionBD;
 import jakarta.servlet.ServletException;
@@ -27,7 +28,7 @@ public class ListadoProductosServlet extends HttpServlet {
         // Las rutas relativas de H2, como ./datos, parten de este directorio.
         System.out.println("07_JDBC - Directorio de trabajo: " + System.getProperty("user.dir"));
         // Para usar MariaDB, cambia aquí la implementación y su import en los cuatro servlets.
-        ConexionBD baseDatos = new ConexionBDH2();
+        ConexionBD baseDatos = new ConexionBDMySQL();
         try {
             baseDatos.prepararBaseDatos();
             productos = new ProductoDAO(baseDatos);

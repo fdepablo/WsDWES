@@ -1,6 +1,5 @@
 package servlets;
 
-import bbdd.ConexionBDH2;
 import bbdd.ConexionBDMySQL;
 import bbdd.ProductoDAO;
 import bbdd.interfaces.ConexionBD;
@@ -17,7 +16,7 @@ import java.sql.SQLException;
 public class AltaProductoServlet extends HttpServlet {
     // La base ya se ha preparado al pasar primero por el listado.
     private final ConexionBD baseDatos = new ConexionBDMySQL();
-    private final ProductoDAO productos = new ProductoDAO(baseDatos);
+    private final ProductoDAO productoDAO = new ProductoDAO(baseDatos);
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,7 +33,7 @@ public class AltaProductoServlet extends HttpServlet {
         // Convertimos el texto a decimal. Aquí no aplicamos validaciones de negocio.
         Double precio = Double.parseDouble(request.getParameter("precio"));
         try {
-            productos.insertar(nombre, precio);
+            productoDAO.insertar(nombre, precio);
             // POST/Redirect/GET: actualizar el listado no repite el INSERT.
             response.sendRedirect(request.getContextPath() + "/productos");
         } catch (SQLException e) {
