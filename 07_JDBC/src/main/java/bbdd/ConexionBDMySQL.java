@@ -16,7 +16,7 @@ public class ConexionBDMySQL implements ConexionBD {
     public Connection abrir() throws SQLException {
         try {
             // Carga explícita del controlador que Maven incluye en WEB-INF/lib.
-            Class.forName("org.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             throw new SQLException("No se encuentra el controlador JDBC de MySQL.", e);
         }

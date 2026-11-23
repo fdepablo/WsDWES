@@ -1,6 +1,7 @@
 package servlets;
 
 import bbdd.ConexionBDH2;
+import bbdd.ConexionBDMySQL;
 import bbdd.ProductoDAO;
 import bbdd.interfaces.ConexionBD;
 import jakarta.servlet.ServletException;
@@ -15,7 +16,7 @@ import java.sql.SQLException;
 @WebServlet("/productos/eliminar")
 public class EliminarProductoServlet extends HttpServlet {
     // La base ya se ha preparado al pasar primero por el listado.
-    private final ConexionBD baseDatos = new ConexionBDH2();
+    private final ConexionBD baseDatos = new ConexionBDMySQL();
     private final ProductoDAO productos = new ProductoDAO(baseDatos);
 
     @Override
