@@ -1,6 +1,5 @@
 package servlets;
 
-import bbdd.ConexionBDH2;
 import bbdd.ConexionBDMySQL;
 import bbdd.ProductoDAO;
 import bbdd.interfaces.ConexionBD;
@@ -20,7 +19,7 @@ import java.sql.SQLException;
 // El "1" indica que la posición de inicialización en caso de que haya varios Servlets con este parámetro.
 @WebServlet(value = {"/productos", "/productos/"}, loadOnStartup = 1)
 public class ListadoProductosServlet extends HttpServlet {
-    private ProductoDAO productos;
+    private ProductoDAO productoDAO;
 
     /** Prepara la base y el DAO una sola vez al crear este servlet. */
     @Override
@@ -31,7 +30,7 @@ public class ListadoProductosServlet extends HttpServlet {
         ConexionBD baseDatos = new ConexionBDMySQL();
         try {
             baseDatos.prepararBaseDatos();
-            productos = new ProductoDAO(baseDatos);
+            productoDAO = new ProductoDAO(baseDatos);
         } catch (SQLException e) {
             throw new ServletException("No se pudo preparar la base de datos.", e);
         }
@@ -42,7 +41,7 @@ public class ListadoProductosServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             // La lista solo se necesita en esta respuesta: la pasamos en la petición.
-            request.setAttribute("productos", productos.listar());
+            request.setAttribute("productos", productoDAO.listar());
             request.getRequestDispatcher("/WEB-INF/vistas/listado.jsp").forward(request, response);
         } catch (SQLException e) {
             throw new ServletException("No se pudieron consultar los productos.", e);

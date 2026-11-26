@@ -3,10 +3,7 @@ package bbdd;
 import bbdd.interfaces.ConexionBD;
 import modelo.Producto;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +25,13 @@ public class ProductoDAO {
     public Producto buscar(long id) throws SQLException {
         String sql = "SELECT id, nombre, precio FROM productos WHERE id = ?";
         try (Connection conexion = baseDatos.abrir();
+
+             //Esto no debemos hacerlo así nunca, porque estamos expuestos
+             //a la inyeccion SQL
+             /*
+             Statement statement = conexion.createStatement();
+             statement.executeQuery("select * from productos where id = "+id);
+             */
              PreparedStatement sentencia = conexion.prepareStatement(sql)) {
             sentencia.setLong(1, id);
             //Con executeQuery() ejecutamos la sql compilada anteriormente
